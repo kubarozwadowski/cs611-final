@@ -3,7 +3,6 @@ package models;
 import java.util.*;
 
 import enums.LetterGrade;
-import util.Description;
 import interfaces.Summarizable;
 
 public class Course implements Summarizable{

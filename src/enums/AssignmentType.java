@@ -5,5 +5,6 @@ public enum AssignmentType {
     FINAL,
     HOMEWORK,
     QUIZ,
-    LAB
+    LAB,
+    ATTENDANCE
 }

@@ -1,7 +1,6 @@
 package models;
 
 import enums.AssignmentType;
-import util.Description;
 
 import java.util.*;
 
