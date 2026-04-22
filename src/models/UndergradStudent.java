@@ -1,5 +1,9 @@
 package models;
 
+import enums.StudentStatus;
+
 public class UndergradStudent extends Student{
-    
+    public UndergradStudent(int id, String name, Date dob, String email, int gradYear, StudentStatus status) {
+        super(id, name, dob, email, gradYear, status);
+    }
 }
