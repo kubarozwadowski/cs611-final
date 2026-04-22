@@ -4,8 +4,9 @@ import java.util.*;
 
 import enums.LetterGrade;
 import util.Description;
+import interfaces.Summarizable;
 
-public class Course {
+public class Course implements Summarizable{
     String dept;
     int code;
     String name;
@@ -91,5 +92,9 @@ public class Course {
 
     public String getDisplayLabel() {
         return dept + " " + code + " - " + name;
+    }
+
+    public String getSummary(){
+        return "Placeholder";
     }
 }
