@@ -96,4 +96,9 @@ public class Course implements Summarizable{
     public String getSummary(){
         return "Placeholder";
     }
+
+    @Override
+    public String toString() {
+        return getDisplayLabel();
+    }
 }
