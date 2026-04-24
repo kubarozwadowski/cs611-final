@@ -1,11 +1,14 @@
 package ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.JButton;
@@ -17,6 +20,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import enums.AssignmentType;
 import logic.SemesterManager;
@@ -39,6 +44,10 @@ public class CourseFormDialog extends JDialog {
     private final JTextArea syllabusArea;
     private final Map<AssignmentType, JCheckBox> assignmentTypeCheckboxes;
     private final Map<AssignmentType, JTextField> assignmentWeightFields;
+    private final Map<String, Double> customAssignmentWeights;
+    private final List<CustomCategoryRow> customCategoryRows;
+    private final JPanel customCategoryRowsPanel;
+    private final JLabel weightsWarningLabel;
 
     public CourseFormDialog(Frame owner, SemesterManager semesterManager, Semester semester, Runnable onCourseCreated) {
         super(owner, "Add Course", true);
@@ -60,6 +69,10 @@ public class CourseFormDialog extends JDialog {
         syllabusArea.setWrapStyleWord(true);
         assignmentTypeCheckboxes = new EnumMap<>(AssignmentType.class);
         assignmentWeightFields = new EnumMap<>(AssignmentType.class);
+        customAssignmentWeights = new java.util.LinkedHashMap<>();
+        customCategoryRows = new ArrayList<>();
+        customCategoryRowsPanel = new JPanel(new GridBagLayout());
+        weightsWarningLabel = new JLabel("Selected category weights must add up to 100%. Current total: 0%");
 
         setLayout(new BorderLayout(12, 12));
         add(buildFormPanel(), BorderLayout.CENTER);
@@ -118,6 +131,14 @@ public class CourseFormDialog extends JDialog {
         gbc.fill = GridBagConstraints.BOTH;
         panel.add(buildAssignmentTypePanel(), gbc);
 
+        gbc.gridx = 1;
+        gbc.gridy = 9;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(weightsWarningLabel, gbc);
+
+        updateWeightWarning();
+
         return panel;
     }
 
@@ -131,7 +152,18 @@ public class CourseFormDialog extends JDialog {
         int row = 0;
         for (AssignmentType assignmentType : AssignmentType.values()) {
             JCheckBox checkBox = new JCheckBox(formatAssignmentTypeLabel(assignmentType));
-            JTextField weightField = new JTextField(8);
+            JTextField weightField = new JTextField(6);
+            weightField.setEnabled(false);
+
+            checkBox.addActionListener(event -> {
+                weightField.setEnabled(checkBox.isSelected());
+                if (!checkBox.isSelected()) {
+                    weightField.setText("");
+                }
+                updateWeightWarning();
+            });
+
+            attachDocumentListener(weightField, this::updateWeightWarning);
 
             assignmentTypeCheckboxes.put(assignmentType, checkBox);
             assignmentWeightFields.put(assignmentType, weightField);
@@ -146,12 +178,70 @@ public class CourseFormDialog extends JDialog {
             panel.add(weightField, gbc);
 
             gbc.gridx = 2;
+            gbc.weightx = 0.0;
             panel.add(new JLabel("%"), gbc);
 
             row++;
         }
 
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        gbc.gridwidth = 3;
+        gbc.weightx = 1.0;
+        panel.add(buildCustomCategoryPanel(), gbc);
+
         return panel;
+    }
+
+    private JPanel buildCustomCategoryPanel() {
+        JPanel panel = new JPanel(new BorderLayout(6, 6));
+
+        JButton addCustomTypeButton = new JButton("Add Custom Type");
+        addCustomTypeButton.addActionListener(event -> {
+            addCustomCategoryRow();
+            updateWeightWarning();
+        });
+        panel.add(addCustomTypeButton, BorderLayout.NORTH);
+
+        panel.add(customCategoryRowsPanel, BorderLayout.CENTER);
+        return panel;
+    }
+
+    private void addCustomCategoryRow() {
+        CustomCategoryRow row = new CustomCategoryRow();
+        customCategoryRows.add(row);
+        refreshCustomCategoryRowsPanel();
+    }
+
+    private void refreshCustomCategoryRowsPanel() {
+        customCategoryRowsPanel.removeAll();
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(2, 2, 2, 2);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        for (int i = 0; i < customCategoryRows.size(); i++) {
+            CustomCategoryRow row = customCategoryRows.get(i);
+
+            gbc.gridx = 0;
+            gbc.gridy = i;
+            gbc.weightx = 1.0;
+            customCategoryRowsPanel.add(row.nameField, gbc);
+
+            gbc.gridx = 1;
+            gbc.weightx = 0.0;
+            customCategoryRowsPanel.add(row.weightField, gbc);
+
+            gbc.gridx = 2;
+            customCategoryRowsPanel.add(new JLabel("%"), gbc);
+
+            gbc.gridx = 3;
+            customCategoryRowsPanel.add(row.removeButton, gbc);
+        }
+
+        customCategoryRowsPanel.revalidate();
+        customCategoryRowsPanel.repaint();
     }
 
     private String formatAssignmentTypeLabel(AssignmentType assignmentType) {
@@ -204,8 +294,10 @@ public class CourseFormDialog extends JDialog {
             String descriptionText = optionalText(descriptionArea.getText());
             String syllabusText = optionalText(syllabusArea.getText());
             Map<AssignmentType, Double> assignmentWeights = parseAssignmentWeights();
+            Map<String, Double> customWeights = parseCustomAssignmentWeights();
+            validateTotalWeight(assignmentWeights, customWeights);
 
-            Description description = new Description(name, descriptionText, syllabusText, assignmentWeights);
+            Description description = new Description(name, descriptionText, syllabusText, assignmentWeights, customWeights);
             Course course = new Course(dept, code, name, description, meetingTimes, building, prereqs);
 
             semesterManager.addCourseToSemester(semester, course);
@@ -229,7 +321,6 @@ public class CourseFormDialog extends JDialog {
 
     private Map<AssignmentType, Double> parseAssignmentWeights() {
         Map<AssignmentType, Double> weights = new EnumMap<>(AssignmentType.class);
-        double total = 0.0;
 
         for (AssignmentType assignmentType : AssignmentType.values()) {
             JCheckBox checkBox = assignmentTypeCheckboxes.get(assignmentType);
@@ -239,32 +330,173 @@ public class CourseFormDialog extends JDialog {
                 continue;
             }
 
-            double weight = parseWeight(weightField.getText(), assignmentType);
+            double weight = parseWeight(weightField.getText(), formatAssignmentTypeLabel(assignmentType) + " weight");
             if (weight <= 0.0) {
                 throw new IllegalArgumentException(formatAssignmentTypeLabel(assignmentType) + " weight must be greater than 0.");
             }
 
             weights.put(assignmentType, weight);
-            total += weight;
-        }
-
-        if (weights.isEmpty()) {
-            throw new IllegalArgumentException("Select at least one assignment category.");
-        }
-
-        if (Math.abs(total - 100.0) > 0.0001) {
-            throw new IllegalArgumentException("Selected category weights must add up to 100%. Current total: " + total + "%");
         }
 
         return weights;
     }
 
-    private double parseWeight(String rawWeight, AssignmentType assignmentType) {
-        String weightText = requireText(rawWeight, formatAssignmentTypeLabel(assignmentType) + " weight");
+    private Map<String, Double> parseCustomAssignmentWeights() {
+        customAssignmentWeights.clear();
+
+        for (CustomCategoryRow row : customCategoryRows) {
+            String categoryName = optionalText(row.nameField.getText());
+            String weightText = optionalText(row.weightField.getText());
+
+            if (categoryName.isEmpty() && weightText.isEmpty()) {
+                continue;
+            }
+
+            if (categoryName.isEmpty()) {
+                throw new IllegalArgumentException("Custom assignment type name is required.");
+            }
+
+            if (customAssignmentWeights.containsKey(categoryName)) {
+                throw new IllegalArgumentException("Duplicate custom assignment type: " + categoryName);
+            }
+
+            double weight = parseWeight(weightText, categoryName + " weight");
+            if (weight <= 0.0) {
+                throw new IllegalArgumentException(categoryName + " weight must be greater than 0.");
+            }
+
+            customAssignmentWeights.put(categoryName, weight);
+        }
+
+        return new java.util.LinkedHashMap<>(customAssignmentWeights);
+    }
+
+    private double parseWeight(String rawWeight, String fieldLabel) {
+        String weightText = requireText(rawWeight, fieldLabel);
         try {
             return Double.parseDouble(weightText);
         } catch (NumberFormatException exception) {
-            throw new IllegalArgumentException(formatAssignmentTypeLabel(assignmentType) + " weight must be a number.");
+            throw new IllegalArgumentException(fieldLabel + " must be a number.");
+        }
+    }
+
+    private void validateTotalWeight(Map<AssignmentType, Double> standardWeights, Map<String, Double> customWeights) {
+        int selectedCategoryCount = standardWeights.size() + customWeights.size();
+        if (selectedCategoryCount == 0) {
+            throw new IllegalArgumentException("Select at least one assignment category.");
+        }
+
+        double total = 0.0;
+        for (double weight : standardWeights.values()) {
+            total += weight;
+        }
+        for (double weight : customWeights.values()) {
+            total += weight;
+        }
+
+        if (Math.abs(total - 100.0) > 0.0001) {
+            throw new IllegalArgumentException("Selected category weights must add up to 100%. Current total: " + total + "%");
+        }
+    }
+
+    private void updateWeightWarning() {
+        double total = 0.0;
+        int selectedCount = 0;
+
+        for (AssignmentType assignmentType : AssignmentType.values()) {
+            JCheckBox checkBox = assignmentTypeCheckboxes.get(assignmentType);
+            JTextField weightField = assignmentWeightFields.get(assignmentType);
+
+            if (checkBox != null && checkBox.isSelected()) {
+                selectedCount++;
+                String weightText = optionalText(weightField.getText());
+                if (!weightText.isEmpty()) {
+                    try {
+                        total += Double.parseDouble(weightText);
+                    } catch (NumberFormatException exception) {
+                        weightsWarningLabel.setForeground(Color.RED);
+                        weightsWarningLabel.setText("One or more weights is not a valid number.");
+                        return;
+                    }
+                }
+            }
+        }
+
+        for (CustomCategoryRow row : customCategoryRows) {
+            String name = optionalText(row.nameField.getText());
+            String weightText = optionalText(row.weightField.getText());
+
+            if (name.isEmpty() && weightText.isEmpty()) {
+                continue;
+            }
+
+            selectedCount++;
+            if (weightText.isEmpty()) {
+                continue;
+            }
+
+            try {
+                total += Double.parseDouble(weightText);
+            } catch (NumberFormatException exception) {
+                weightsWarningLabel.setForeground(Color.RED);
+                weightsWarningLabel.setText("One or more custom weights is not a valid number.");
+                return;
+            }
+        }
+
+        if (selectedCount == 0) {
+            weightsWarningLabel.setForeground(Color.RED);
+            weightsWarningLabel.setText("Select at least one assignment category.");
+            return;
+        }
+
+        if (Math.abs(total - 100.0) <= 0.0001) {
+            weightsWarningLabel.setForeground(new Color(0, 128, 0));
+            weightsWarningLabel.setText("Weights total 100%.");
+            return;
+        }
+
+        weightsWarningLabel.setForeground(Color.RED);
+        weightsWarningLabel.setText("Selected category weights must add up to 100%. Current total: " + total + "%");
+    }
+
+    private void attachDocumentListener(JTextField field, Runnable onChange) {
+        field.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent event) {
+                onChange.run();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent event) {
+                onChange.run();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent event) {
+                onChange.run();
+            }
+        });
+    }
+
+    private class CustomCategoryRow {
+        private final JTextField nameField;
+        private final JTextField weightField;
+        private final JButton removeButton;
+
+        private CustomCategoryRow() {
+            this.nameField = new JTextField(16);
+            this.weightField = new JTextField(6);
+            this.removeButton = new JButton("Remove");
+
+            attachDocumentListener(nameField, CourseFormDialog.this::updateWeightWarning);
+            attachDocumentListener(weightField, CourseFormDialog.this::updateWeightWarning);
+
+            removeButton.addActionListener(event -> {
+                customCategoryRows.remove(this);
+                refreshCustomCategoryRowsPanel();
+                updateWeightWarning();
+            });
         }
     }
 
