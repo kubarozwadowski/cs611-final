@@ -9,9 +9,11 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -30,6 +32,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 import enums.StudentStatus;
+import models.Assignment;
 import models.Course;
 import models.Date;
 import models.GradStudent;
@@ -41,6 +44,7 @@ public class CourseDetailFrame extends JFrame {
     private final JLabel studentsSummaryLabel;
     private final JLabel assignmentsSummaryLabel;
     private final JLabel settingsSummaryLabel;
+    private final DefaultListModel<Assignment> assignmentListModel;
 
     public CourseDetailFrame(Course course) {
         super(course.getDisplayLabel());
@@ -48,6 +52,7 @@ public class CourseDetailFrame extends JFrame {
         this.studentsSummaryLabel = new JLabel();
         this.assignmentsSummaryLabel = new JLabel();
         this.settingsSummaryLabel = new JLabel();
+        this.assignmentListModel = new DefaultListModel<>();
 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(560, 300);
@@ -193,7 +198,40 @@ public class CourseDetailFrame extends JFrame {
     }
 
     private void openAssignmentsPlaceholder() {
-        JOptionPane.showMessageDialog(this, "Assignments section is ready, detailed assignment management will be added next.", "Assignments", JOptionPane.INFORMATION_MESSAGE);
+        boolean hasEnumCategories = !course.getDescription().getAssignmentWeights().isEmpty();
+        boolean hasCustomCategories = !course.getDescription().getCustomAssignmentWeights().isEmpty();
+
+        if (!hasEnumCategories && !hasCustomCategories) {
+            JOptionPane.showMessageDialog(
+                this,
+                "This course does not have any assignment categories configured yet.",
+                "Assignments",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+            return;
+        }
+
+        JDialog dialog = new JDialog(this, "Assignments", Dialog.ModalityType.APPLICATION_MODAL);
+        dialog.setLayout(new BorderLayout(10, 10));
+        dialog.setSize(560, 360);
+        dialog.setLocationRelativeTo(this);
+
+        JList<Assignment> assignmentList = new JList<>(assignmentListModel);
+        dialog.add(new JScrollPane(assignmentList), BorderLayout.CENTER);
+
+        refreshAssignmentList();
+
+        JButton addAssignmentButton = new JButton("Add Assignment");
+        addAssignmentButton.addActionListener(event -> openAssignmentDialog(dialog));
+        JButton closeButton = new JButton("Close");
+        closeButton.addActionListener(event -> dialog.dispose());
+
+        JPanel buttonsPanel = new JPanel();
+        buttonsPanel.add(addAssignmentButton);
+        buttonsPanel.add(closeButton);
+        dialog.add(buttonsPanel, BorderLayout.SOUTH);
+
+        dialog.setVisible(true);
     }
 
     private void openSettingsPlaceholder() {
@@ -228,6 +266,24 @@ public class CourseDetailFrame extends JFrame {
         for (Student student : sortedStudents) {
             String line = student.getId() + " - " + student.getName() + " (" + student.getStatus() + ")";
             studentListModel.addElement(line);
+        }
+    }
+
+    private void openAssignmentDialog(Dialog owner) {
+        AssignmentFormDialog dialog = new AssignmentFormDialog(owner, course, () -> {
+            refreshAssignmentList();
+            refreshSectionSummaries();
+        });
+        dialog.setVisible(true);
+    }
+
+    private void refreshAssignmentList() {
+        assignmentListModel.clear();
+        List<Assignment> sortedAssignments = new ArrayList<>(course.getAssignments());
+        Collections.sort(sortedAssignments, Comparator.comparing(Assignment::getDueDate).thenComparing(Assignment::getName));
+
+        for (Assignment assignment : sortedAssignments) {
+            assignmentListModel.addElement(assignment);
         }
     }
 
