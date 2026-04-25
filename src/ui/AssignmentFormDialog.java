@@ -43,6 +43,12 @@ public class AssignmentFormDialog extends JDialog {
     private final JTextField dayField;
     private final JTextField hourField;
     private final JTextField minuteField;
+    private final JTextField lateYearField;
+    private final JTextField lateMonthField;
+    private final JTextField lateDayField;
+    private final JTextField lateHourField;
+    private final JTextField lateMinuteField;
+    private final JTextField latePenaltyField;
     private final List<BreakdownRow> breakdownRows;
     private final JPanel breakdownRowsPanel;
     private final JLabel breakdownTotalLabel;
@@ -63,6 +69,12 @@ public class AssignmentFormDialog extends JDialog {
         dayField = new JTextField(4);
         hourField = new JTextField(4);
         minuteField = new JTextField(4);
+        lateYearField = new JTextField(6);
+        lateMonthField = new JTextField(4);
+        lateDayField = new JTextField(4);
+        lateHourField = new JTextField(4);
+        lateMinuteField = new JTextField(4);
+        latePenaltyField = new JTextField(6);
         breakdownRows = new ArrayList<>();
         breakdownRowsPanel = new JPanel(new GridBagLayout());
         breakdownTotalLabel = new JLabel();
@@ -122,6 +134,17 @@ public class AssignmentFormDialog extends JDialog {
         gbc.gridx = 0;
         gbc.gridy = 5;
         gbc.weightx = 0.0;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel.add(new JLabel("Late Due Date"), gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        panel.add(buildLateDueDatePanel(), gbc);
+
+        addField(panel, gbc, 6, "Late Penalty (pts)", latePenaltyField);
+
+        gbc.gridx = 0;
+        gbc.gridy = 7;
+        gbc.weightx = 0.0;
         gbc.anchor = GridBagConstraints.NORTHWEST;
         panel.add(new JLabel("Breakdown *"), gbc);
         gbc.gridx = 1;
@@ -144,6 +167,21 @@ public class AssignmentFormDialog extends JDialog {
         panel.add(hourField);
         panel.add(new JLabel("Minute"));
         panel.add(minuteField);
+        return panel;
+    }
+
+    private JPanel buildLateDueDatePanel() {
+        JPanel panel = new JPanel();
+        panel.add(new JLabel("Year"));
+        panel.add(lateYearField);
+        panel.add(new JLabel("Month"));
+        panel.add(lateMonthField);
+        panel.add(new JLabel("Day"));
+        panel.add(lateDayField);
+        panel.add(new JLabel("Hour"));
+        panel.add(lateHourField);
+        panel.add(new JLabel("Minute"));
+        panel.add(lateMinuteField);
         return panel;
     }
 
@@ -284,14 +322,24 @@ public class AssignmentFormDialog extends JDialog {
             Map<String, Double> gradeBreakdown = parseGradeBreakdown(totalPoints);
             String descriptionText = optionalText(descriptionArea.getText());
             Date dueDate = parseDueDate();
+            Date lateDueDate = parseLateDueDate();
+            double latePenalty = parseLatePenalty(totalPoints);
 
             int assignmentId = nextAssignmentId();
             Description description = new Description(name, descriptionText);
             Assignment assignment;
-            if (typeOption.isEnumType()) {
-                assignment = new Assignment(assignmentId, name, typeOption.getEnumType(), totalPoints, gradeBreakdown, dueDate, description);
+            if (lateDueDate != null) {
+                if (typeOption.isEnumType()) {
+                    assignment = new Assignment(assignmentId, name, typeOption.getEnumType(), totalPoints, gradeBreakdown, dueDate, lateDueDate, latePenalty, description);
+                } else {
+                    assignment = new Assignment(assignmentId, name, typeOption.getCustomType(), totalPoints, gradeBreakdown, dueDate, lateDueDate, latePenalty, description);
+                }
             } else {
-                assignment = new Assignment(assignmentId, name, typeOption.getCustomType(), totalPoints, gradeBreakdown, dueDate, description);
+                if (typeOption.isEnumType()) {
+                    assignment = new Assignment(assignmentId, name, typeOption.getEnumType(), totalPoints, gradeBreakdown, dueDate, description);
+                } else {
+                    assignment = new Assignment(assignmentId, name, typeOption.getCustomType(), totalPoints, gradeBreakdown, dueDate, description);
+                }
             }
 
             course.addAssignment(assignment);
@@ -379,6 +427,42 @@ public class AssignmentFormDialog extends JDialog {
         }
 
         return new Date(year, month, day, hour, minute);
+    }
+
+    private Date parseLateDueDate() {
+        String year  = optionalText(lateYearField.getText());
+        String month = optionalText(lateMonthField.getText());
+        String day   = optionalText(lateDayField.getText());
+
+        // All blank — no late due date
+        if (year.isEmpty() && month.isEmpty() && day.isEmpty()) return null;
+
+        int y = parseInteger(requireText(year,  "Late due year"),  "Late due year");
+        int m = parseInteger(requireText(month, "Late due month"), "Late due month");
+        int d = parseInteger(requireText(day,   "Late due day"),   "Late due day");
+
+        String hourText   = optionalText(lateHourField.getText());
+        String minuteText = optionalText(lateMinuteField.getText());
+
+        Integer hour = null;
+        Integer minute = null;
+        if (!hourText.isEmpty() || !minuteText.isEmpty()) {
+            hour   = parseInteger(requireText(hourText,   "Late due hour"),   "Late due hour");
+            minute = parseInteger(requireText(minuteText, "Late due minute"), "Late due minute");
+        }
+
+        return new Date(y, m, d, hour, minute);
+    }
+
+    private double parseLatePenalty(int totalPoints) {
+        String text = optionalText(latePenaltyField.getText());
+        if (text.isEmpty()) return 0;
+
+        double penalty = parseDouble(text, "Late penalty");
+        if (penalty < 0 || penalty >= totalPoints) {
+            throw new IllegalArgumentException("Late penalty must be >= 0 and less than total points (" + totalPoints + ").");
+        }
+        return penalty;
     }
 
     private int nextAssignmentId() {

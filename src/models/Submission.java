@@ -42,7 +42,9 @@ public class Submission implements Gradeable{
     }
 
     public double getFinalScore(){
-        return Math.max(0, this.pointsEarned - this.penalty);
+        double deduction = this.penalty;
+        if (isLate()) deduction += assignment.getLatePenalty();
+        return Math.max(0, this.pointsEarned - deduction);
     }
 
     public double getFinalScorePercentage(){
