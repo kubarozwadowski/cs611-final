@@ -1,8 +1,10 @@
 package models;
 import enums.*;
+import interfaces.Summarizable;
+
 import java.util.*;
 
-public abstract class Student {
+public abstract class Student implements Summarizable{
     private int id;
     private String name;
     private Date dob;
@@ -81,5 +83,9 @@ public abstract class Student {
             }
         }
         return (double) present / attendance.size() * 100;  
+    }
+
+    public String getSummary(){
+        return "Incomplete";
     }
 }

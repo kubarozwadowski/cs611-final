@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Semester {
+import interfaces.Summarizable;
+
+public class Semester implements Summarizable{
     private final String label;
     private final List<Course> courses;
 
@@ -28,5 +30,9 @@ public class Semester {
     @Override
     public String toString() {
         return label;
+    }
+
+    public String getSummary(){
+        return "Incomplete";
     }
 }

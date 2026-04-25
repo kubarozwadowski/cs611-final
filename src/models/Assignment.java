@@ -12,6 +12,7 @@ public class Assignment {
     private int totalPoints;
     private HashMap<String, Double> gradeBreakdown;
     private Date dueDate;
+    private Date lateDueDate;
     private Description description;
 
     public Assignment(int id, String name, AssignmentType type, int totalPoints, Date dueDate, Description description) {
