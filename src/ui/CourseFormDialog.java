@@ -2,6 +2,7 @@ package ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -72,14 +73,27 @@ public class CourseFormDialog extends JDialog {
         customAssignmentWeights = new java.util.LinkedHashMap<>();
         customCategoryRows = new ArrayList<>();
         customCategoryRowsPanel = new JPanel(new GridBagLayout());
-        weightsWarningLabel = new JLabel("Selected category weights must add up to 100%. Current total: 0%");
+        weightsWarningLabel = new JLabel(formatWarningText("Selected category weights must add up to 100%. Current total: 0%"));
 
         setLayout(new BorderLayout(12, 12));
         add(buildFormPanel(), BorderLayout.CENTER);
         add(buildButtonPanel(), BorderLayout.SOUTH);
 
         pack();
+        ensureMinimumDialogWidth();
         setLocationRelativeTo(owner);
+    }
+
+    private void ensureMinimumDialogWidth() {
+        final int minWidth = 760;
+        Dimension currentSize = getSize();
+        if (currentSize.width < minWidth) {
+            setSize(minWidth, currentSize.height);
+        }
+    }
+
+    private String formatWarningText(String message) {
+        return "<html><div style='width: 430px;'>" + message + "</div></html>";
     }
 
     private JPanel buildFormPanel() {
@@ -415,7 +429,7 @@ public class CourseFormDialog extends JDialog {
                         total += Double.parseDouble(weightText);
                     } catch (NumberFormatException exception) {
                         weightsWarningLabel.setForeground(Color.RED);
-                        weightsWarningLabel.setText("One or more weights is not a valid number.");
+                        weightsWarningLabel.setText(formatWarningText("One or more weights is not a valid number."));
                         return;
                     }
                 }
@@ -439,25 +453,25 @@ public class CourseFormDialog extends JDialog {
                 total += Double.parseDouble(weightText);
             } catch (NumberFormatException exception) {
                 weightsWarningLabel.setForeground(Color.RED);
-                weightsWarningLabel.setText("One or more custom weights is not a valid number.");
+                weightsWarningLabel.setText(formatWarningText("One or more custom weights is not a valid number."));
                 return;
             }
         }
 
         if (selectedCount == 0) {
             weightsWarningLabel.setForeground(Color.RED);
-            weightsWarningLabel.setText("Select at least one assignment category.");
+            weightsWarningLabel.setText(formatWarningText("Select at least one assignment category."));
             return;
         }
 
         if (Math.abs(total - 100.0) <= 0.0001) {
             weightsWarningLabel.setForeground(new Color(0, 128, 0));
-            weightsWarningLabel.setText("Weights total 100%.");
+            weightsWarningLabel.setText(formatWarningText("Weights total 100%."));
             return;
         }
 
         weightsWarningLabel.setForeground(Color.RED);
-        weightsWarningLabel.setText("Selected category weights must add up to 100%. Current total: " + total + "%");
+        weightsWarningLabel.setText(formatWarningText("Selected category weights must add up to 100%. Current total: " + total + "%"));
     }
 
     private void attachDocumentListener(JTextField field, Runnable onChange) {
