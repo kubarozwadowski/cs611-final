@@ -18,3 +18,4 @@ TODO:
             - Custom Cutoffs
             - Cutoffs based on certain distributions
         - View letter grades
+    - Deleting / updating students, courses, etc.

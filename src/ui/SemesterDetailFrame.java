@@ -18,6 +18,7 @@ import javax.swing.SwingConstants;
 import logic.SemesterManager;
 import models.Course;
 import models.Semester;
+import storage.StorageManager;
 
 public class SemesterDetailFrame extends JFrame {
     private final SemesterManager semesterManager;
@@ -68,7 +69,10 @@ public class SemesterDetailFrame extends JFrame {
     }
 
     private void openAddCourseDialog() {
-        CourseFormDialog dialog = new CourseFormDialog(this, semesterManager, semester, this::refreshCourseList);
+        CourseFormDialog dialog = new CourseFormDialog(this, semesterManager, semester, () -> {
+            StorageManager.getInstance().save(semesterManager);
+            refreshCourseList();
+        });
         dialog.setVisible(true);
     }
 
@@ -86,7 +90,7 @@ public class SemesterDetailFrame extends JFrame {
             return;
         }
 
-        CourseDetailFrame courseDetailFrame = new CourseDetailFrame(selectedCourse);
+        CourseDetailFrame courseDetailFrame = new CourseDetailFrame(semesterManager, selectedCourse);
         courseDetailFrame.setVisible(true);
     }
 }

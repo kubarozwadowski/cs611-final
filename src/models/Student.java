@@ -88,4 +88,7 @@ public abstract class Student implements Summarizable{
     public String getSummary(){
         return "Incomplete";
     }
+
+    public void setFinalGrade(LetterGrade grade)   { this.finalGrade = grade; }
+    public void setCurrentGrade(LetterGrade grade) { this.currentGrade = grade; }
 }

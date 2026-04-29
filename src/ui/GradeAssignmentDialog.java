@@ -20,19 +20,23 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import logic.SemesterManager;
 import models.Assignment;
 import models.Course;
 import models.Date;
 import models.Student;
 import models.Submission;
+import storage.StorageManager;
 
 public class GradeAssignmentDialog extends JDialog {
+    private final SemesterManager semesterManager;
     private final Course course;
     private final Assignment assignment;
     private final List<StudentGradeRow> gradeRows;
 
-    public GradeAssignmentDialog(Dialog owner, Course course, Assignment assignment) {
+    public GradeAssignmentDialog(Dialog owner, SemesterManager semesterManager, Course course, Assignment assignment) {
         super(owner, "Grade: " + assignment.getName(), true);
+        this.semesterManager = semesterManager;
         this.course = course;
         this.assignment = assignment;
         this.gradeRows = new ArrayList<>();
@@ -155,6 +159,7 @@ public class GradeAssignmentDialog extends JDialog {
                 row.submission.grade();
             }
 
+            StorageManager.getInstance().save(semesterManager);
             JOptionPane.showMessageDialog(this, "Grades saved successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
             dispose();
         } catch (IllegalArgumentException e) {

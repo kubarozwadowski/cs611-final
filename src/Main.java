@@ -14,6 +14,7 @@ import models.Description;
 import models.GradStudent;
 import models.Semester;
 import models.UndergradStudent;
+import storage.StorageManager;
 import ui.SemesterListFrame;
 
 public class Main {
@@ -21,8 +22,11 @@ public class Main {
         SwingUtilities.invokeLater(() -> {
             setSystemLookAndFeel();
 
-            SemesterManager semesterManager = new SemesterManager();
-            seedSampleData(semesterManager);
+            SemesterManager semesterManager = StorageManager.getInstance().load();
+            if (semesterManager == null) {
+                semesterManager = new SemesterManager();
+                seedSampleData(semesterManager);
+            }
             SemesterListFrame frame = new SemesterListFrame(semesterManager);
             frame.setVisible(true);
         });

@@ -15,6 +15,7 @@ import javax.swing.ListSelectionModel;
 
 import logic.SemesterManager;
 import models.Semester;
+import storage.StorageManager;
 
 public class SemesterListFrame extends JFrame {
     private final SemesterManager semesterManager;
@@ -69,6 +70,7 @@ public class SemesterListFrame extends JFrame {
 
         try {
             Semester semester = semesterManager.addSemester(label);
+            StorageManager.getInstance().save(semesterManager);
             refreshSemesterList();
             semesterList.setSelectedValue(semester, true);
         } catch (IllegalArgumentException exception) {

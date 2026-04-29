@@ -32,22 +32,26 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 import enums.StudentStatus;
+import logic.SemesterManager;
 import models.Assignment;
 import models.Course;
 import models.Date;
 import models.GradStudent;
 import models.Student;
 import models.UndergradStudent;
+import storage.StorageManager;
 
 public class CourseDetailFrame extends JFrame {
+    private final SemesterManager semesterManager;
     private final Course course;
     private final JLabel studentsSummaryLabel;
     private final JLabel assignmentsSummaryLabel;
     private final JLabel settingsSummaryLabel;
     private final DefaultListModel<Assignment> assignmentListModel;
 
-    public CourseDetailFrame(Course course) {
+    public CourseDetailFrame(SemesterManager semesterManager, Course course) {
         super(course.getDisplayLabel());
+        this.semesterManager = semesterManager;
         this.course = course;
         this.studentsSummaryLabel = new JLabel();
         this.assignmentsSummaryLabel = new JLabel();
@@ -215,6 +219,7 @@ public class CourseDetailFrame extends JFrame {
             }
 
             course.addStudent(student);
+            StorageManager.getInstance().save(semesterManager);
             refreshStudentList(studentListModel);
             refreshSectionSummaries();
         } catch (IllegalArgumentException exception) {
@@ -309,6 +314,7 @@ public class CourseDetailFrame extends JFrame {
 
     private void openAssignmentDialog(Dialog owner) {
         AssignmentFormDialog dialog = new AssignmentFormDialog(owner, course, () -> {
+            StorageManager.getInstance().save(semesterManager);
             refreshAssignmentList();
             refreshSectionSummaries();
         });
@@ -316,7 +322,7 @@ public class CourseDetailFrame extends JFrame {
     }
 
     private void openGradeAssignmentDialog(Dialog owner, Assignment assignment) {
-        GradeAssignmentDialog dialog = new GradeAssignmentDialog(owner, course, assignment);
+        GradeAssignmentDialog dialog = new GradeAssignmentDialog(owner, semesterManager, course, assignment);
         dialog.setVisible(true);
     }
 
