@@ -18,6 +18,7 @@ import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -25,7 +26,9 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import java.util.LinkedHashMap;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
@@ -39,8 +42,10 @@ import enums.LetterGrade;
 import enums.StudentStatus;
 import logic.SemesterManager;
 import models.Assignment;
+import enums.AssignmentType;
 import models.Course;
 import models.Date;
+import models.Description;
 import models.GradStudent;
 import models.Student;
 import models.UndergradStudent;
@@ -53,6 +58,7 @@ public class CourseDetailFrame extends JFrame {
     private final JLabel assignmentsSummaryLabel;
     private final JLabel gradeCutoffsSummaryLabel;
     private final JLabel settingsSummaryLabel;
+    private final JLabel headerLabel;
     private final DefaultListModel<Assignment> assignmentListModel;
 
     public CourseDetailFrame(SemesterManager semesterManager, Course course) {
@@ -63,6 +69,7 @@ public class CourseDetailFrame extends JFrame {
         this.assignmentsSummaryLabel = new JLabel();
         this.gradeCutoffsSummaryLabel = new JLabel();
         this.settingsSummaryLabel = new JLabel();
+        this.headerLabel = new JLabel();
         this.assignmentListModel = new DefaultListModel<>();
 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -73,7 +80,8 @@ public class CourseDetailFrame extends JFrame {
         Border framePadding = new EmptyBorder(12, 12, 12, 12);
         ((JPanel) getContentPane()).setBorder(framePadding);
 
-        JLabel headerLabel = new JLabel(course.getDisplayLabel(), SwingConstants.CENTER);
+        headerLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        headerLabel.setText(course.getDisplayLabel());
         headerLabel.setFont(headerLabel.getFont().deriveFont(Font.BOLD, 16f));
         add(headerLabel, BorderLayout.NORTH);
 
@@ -120,7 +128,16 @@ public class CourseDetailFrame extends JFrame {
         studentsSummaryLabel.setText(course.getStudents().size() + " students in this course");
         assignmentsSummaryLabel.setText(course.getAssignments().size() + " assignments configured");
         gradeCutoffsSummaryLabel.setText("A starts at " + formatPercentage(course.getGradeCutoffs().get(LetterGrade.A)) + "% (customizable)");
-        settingsSummaryLabel.setText("Course settings panel (coming soon)");
+        settingsSummaryLabel.setText("Meeting: " + optionalText(course.getMeetingTimes()) + " | Building: " + optionalText(course.getBuilding()));
+        headerLabel.setText(course.getDisplayLabel());
+        setTitle(course.getDisplayLabel());
+    }
+
+    private String optionalText(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return "Not set";
+        }
+        return value.trim();
     }
 
     private String formatPercentage(Double value) {
@@ -294,7 +311,329 @@ public class CourseDetailFrame extends JFrame {
     }
 
     private void openSettingsPlaceholder() {
-        JOptionPane.showMessageDialog(this, "Settings section is ready, course settings controls will be added next.", "Settings", JOptionPane.INFORMATION_MESSAGE);
+        JDialog dialog = new JDialog(this, "Course Settings", Dialog.ModalityType.APPLICATION_MODAL);
+        dialog.setLayout(new BorderLayout(10, 10));
+        dialog.setSize(700, 700);
+        dialog.setLocationRelativeTo(this);
+
+        JTextField deptField = new JTextField(course.getDept(), 20);
+        JTextField codeField = new JTextField(String.valueOf(course.getCode()), 20);
+        JTextField nameField = new JTextField(course.getName(), 20);
+        JTextField meetingTimesField = new JTextField(course.getMeetingTimes(), 20);
+        JTextField buildingField = new JTextField(course.getBuilding(), 20);
+        JTextField prereqsField = new JTextField(course.getPrereqs(), 20);
+        JTextArea descriptionArea = new JTextArea(5, 20);
+        descriptionArea.setLineWrap(true);
+        descriptionArea.setWrapStyleWord(true);
+        JTextArea syllabusArea = new JTextArea(6, 20);
+        syllabusArea.setLineWrap(true);
+        syllabusArea.setWrapStyleWord(true);
+        Map<AssignmentType, JCheckBox> assignmentTypeCheckboxes = new EnumMap<>(AssignmentType.class);
+        Map<AssignmentType, JTextField> assignmentWeightFields = new EnumMap<>(AssignmentType.class);
+        JTextArea customCategoriesArea = new JTextArea(6, 20);
+        customCategoriesArea.setLineWrap(true);
+        customCategoriesArea.setWrapStyleWord(true);
+
+        Description description = course.getDescription();
+        if (description != null) {
+            descriptionArea.setText(description.getDescriptionText());
+            syllabusArea.setText(description.getSyllabusText());
+
+            for (Map.Entry<String, Double> entry : description.getCustomAssignmentWeights().entrySet()) {
+                if (!customCategoriesArea.getText().isEmpty()) {
+                    customCategoriesArea.append("\n");
+                }
+                customCategoriesArea.append(entry.getKey() + "=" + entry.getValue());
+            }
+        }
+
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(6, 6, 6, 6);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
+
+        addFormRow(formPanel, gbc, 0, "Dept *", deptField);
+        addFormRow(formPanel, gbc, 1, "Code *", codeField);
+        addFormRow(formPanel, gbc, 2, "Name *", nameField);
+        addFormRow(formPanel, gbc, 3, "Meeting Times", meetingTimesField);
+        addFormRow(formPanel, gbc, 4, "Building", buildingField);
+        addFormRow(formPanel, gbc, 5, "Prereqs", prereqsField);
+
+        gbc.gridx = 0;
+        gbc.gridy = 6;
+        gbc.weightx = 0.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        formPanel.add(new JLabel("Description"), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        formPanel.add(new JScrollPane(descriptionArea), gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 7;
+        gbc.weightx = 0.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        formPanel.add(new JLabel("Syllabus"), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        formPanel.add(new JScrollPane(syllabusArea), gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 8;
+        gbc.weightx = 0.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        formPanel.add(new JLabel("Assignment Categories *"), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        formPanel.add(buildSettingsAssignmentTypePanel(assignmentTypeCheckboxes, assignmentWeightFields, description), gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 9;
+        gbc.weightx = 0.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        formPanel.add(new JLabel("Custom Categories"), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        formPanel.add(new JScrollPane(customCategoriesArea), gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 10;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        formPanel.add(new JLabel("Format: one per line as name=weight (for example: Project=25)"), gbc);
+
+        dialog.add(formPanel, BorderLayout.CENTER);
+
+        JButton saveButton = new JButton("Save");
+        saveButton.addActionListener(event -> {
+            try {
+                String dept = requireText(deptField.getText(), "Department");
+                int code = parseInteger(requireText(codeField.getText(), "Course code"), "Course code");
+                String name = requireText(nameField.getText(), "Course name");
+                String meetingTimes = meetingTimesField.getText() == null ? "" : meetingTimesField.getText().trim();
+                String building = buildingField.getText() == null ? "" : buildingField.getText().trim();
+                String prereqs = prereqsField.getText() == null ? "" : prereqsField.getText().trim();
+                String descriptionText = descriptionArea.getText() == null ? "" : descriptionArea.getText().trim();
+                String syllabusText = syllabusArea.getText() == null ? "" : syllabusArea.getText().trim();
+                Map<AssignmentType, Double> assignmentWeights = parseSettingsAssignmentWeights(assignmentTypeCheckboxes, assignmentWeightFields);
+                Map<String, Double> customAssignmentWeights = parseSettingsCustomWeights(customCategoriesArea.getText());
+
+                validateTotalWeight(assignmentWeights, customAssignmentWeights);
+
+                if (code <= 0) {
+                    throw new IllegalArgumentException("Course code must be greater than 0.");
+                }
+
+                course.setDept(dept);
+                course.setCode(code);
+                course.setName(name);
+                course.setMeetingTimes(meetingTimes);
+                course.setBuilding(building);
+                course.setPrereqs(prereqs);
+
+                Description courseDescription = course.getDescription();
+                if (courseDescription == null) {
+                    courseDescription = new Description(name, descriptionText);
+                    course.setDescription(courseDescription);
+                }
+                courseDescription.setTitle(name);
+                courseDescription.setDescriptionText(descriptionText);
+                courseDescription.setSyllabusText(syllabusText);
+                courseDescription.setAssignmentWeights(assignmentWeights);
+                courseDescription.setCustomAssignmentWeights(customAssignmentWeights);
+
+                StorageManager.getInstance().save(semesterManager);
+                refreshSectionSummaries();
+                dialog.dispose();
+            } catch (IllegalArgumentException exception) {
+                JOptionPane.showMessageDialog(dialog, exception.getMessage(), "Invalid Settings", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(event -> dialog.dispose());
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(cancelButton);
+        buttonPanel.add(saveButton);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        dialog.setVisible(true);
+    }
+
+    private JPanel buildSettingsAssignmentTypePanel(Map<AssignmentType, JCheckBox> assignmentTypeCheckboxes,
+            Map<AssignmentType, JTextField> assignmentWeightFields,
+            Description description) {
+        JPanel panel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(2, 2, 2, 2);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        Map<AssignmentType, Double> existingWeights = description == null
+                ? new EnumMap<>(AssignmentType.class)
+                : description.getAssignmentWeights();
+
+        int row = 0;
+        for (AssignmentType assignmentType : AssignmentType.values()) {
+            JCheckBox checkBox = new JCheckBox(formatAssignmentTypeLabel(assignmentType));
+            JTextField weightField = new JTextField(6);
+
+            Double existingWeight = existingWeights.get(assignmentType);
+            if (existingWeight != null) {
+                checkBox.setSelected(true);
+                weightField.setEnabled(true);
+                weightField.setText(String.valueOf(existingWeight));
+            } else {
+                weightField.setEnabled(false);
+            }
+
+            checkBox.addActionListener(event -> {
+                weightField.setEnabled(checkBox.isSelected());
+                if (!checkBox.isSelected()) {
+                    weightField.setText("");
+                }
+            });
+
+            assignmentTypeCheckboxes.put(assignmentType, checkBox);
+            assignmentWeightFields.put(assignmentType, weightField);
+
+            gbc.gridx = 0;
+            gbc.gridy = row;
+            gbc.weightx = 1.0;
+            panel.add(checkBox, gbc);
+
+            gbc.gridx = 1;
+            gbc.weightx = 0.0;
+            panel.add(weightField, gbc);
+
+            gbc.gridx = 2;
+            panel.add(new JLabel("%"), gbc);
+
+            row++;
+        }
+
+        return panel;
+    }
+
+    private Map<AssignmentType, Double> parseSettingsAssignmentWeights(Map<AssignmentType, JCheckBox> assignmentTypeCheckboxes,
+            Map<AssignmentType, JTextField> assignmentWeightFields) {
+        Map<AssignmentType, Double> weights = new EnumMap<>(AssignmentType.class);
+
+        for (AssignmentType assignmentType : AssignmentType.values()) {
+            JCheckBox checkBox = assignmentTypeCheckboxes.get(assignmentType);
+            JTextField weightField = assignmentWeightFields.get(assignmentType);
+
+            if (checkBox == null || !checkBox.isSelected()) {
+                continue;
+            }
+
+            String value = requireText(weightField.getText(), formatAssignmentTypeLabel(assignmentType) + " weight");
+            double weight;
+            try {
+                weight = Double.parseDouble(value);
+            } catch (NumberFormatException exception) {
+                throw new IllegalArgumentException(formatAssignmentTypeLabel(assignmentType) + " weight must be numeric.");
+            }
+
+            if (weight <= 0.0) {
+                throw new IllegalArgumentException(formatAssignmentTypeLabel(assignmentType) + " weight must be greater than 0.");
+            }
+
+            weights.put(assignmentType, weight);
+        }
+
+        return weights;
+    }
+
+    private Map<String, Double> parseSettingsCustomWeights(String rawCustomLines) {
+        Map<String, Double> customWeights = new LinkedHashMap<>();
+        if (rawCustomLines == null || rawCustomLines.trim().isEmpty()) {
+            return customWeights;
+        }
+
+        String[] lines = rawCustomLines.split("\\r?\\n");
+        for (String line : lines) {
+            String trimmed = line.trim();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+
+            int separator = trimmed.indexOf('=');
+            if (separator <= 0 || separator == trimmed.length() - 1) {
+                throw new IllegalArgumentException("Custom categories must use name=weight format.");
+            }
+
+            String name = trimmed.substring(0, separator).trim();
+            String weightText = trimmed.substring(separator + 1).trim();
+            if (name.isEmpty()) {
+                throw new IllegalArgumentException("Custom category name cannot be empty.");
+            }
+
+            if (customWeights.containsKey(name)) {
+                throw new IllegalArgumentException("Duplicate custom category: " + name);
+            }
+
+            double weight;
+            try {
+                weight = Double.parseDouble(weightText);
+            } catch (NumberFormatException exception) {
+                throw new IllegalArgumentException("Custom category weight for " + name + " must be numeric.");
+            }
+
+            if (weight <= 0.0) {
+                throw new IllegalArgumentException("Custom category weight for " + name + " must be greater than 0.");
+            }
+
+            customWeights.put(name, weight);
+        }
+
+        return customWeights;
+    }
+
+    private void validateTotalWeight(Map<AssignmentType, Double> standardWeights, Map<String, Double> customWeights) {
+        int selectedCategoryCount = standardWeights.size() + customWeights.size();
+        if (selectedCategoryCount == 0) {
+            throw new IllegalArgumentException("Select at least one assignment category.");
+        }
+
+        double total = 0.0;
+        for (double weight : standardWeights.values()) {
+            total += weight;
+        }
+        for (double weight : customWeights.values()) {
+            total += weight;
+        }
+
+        if (Math.abs(total - 100.0) > 0.0001) {
+            throw new IllegalArgumentException("Assignment category weights must total 100%. Current total: " + total + "%");
+        }
+    }
+
+    private String formatAssignmentTypeLabel(AssignmentType assignmentType) {
+        String raw = assignmentType.name().toLowerCase().replace('_', ' ');
+        String[] words = raw.split(" ");
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < words.length; i++) {
+            if (i > 0) {
+                builder.append(' ');
+            }
+            String word = words[i];
+            builder.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1));
+        }
+        return builder.toString();
     }
 
     private void openGradeCutoffsDialog() {

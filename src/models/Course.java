@@ -116,6 +116,34 @@ public class Course implements Summarizable{
         return description;
     }
 
+    public void setDept(String dept) {
+        this.dept = dept;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setMeetingTimes(String meetingTimes) {
+        this.meetingTimes = meetingTimes;
+    }
+
+    public void setBuilding(String building) {
+        this.building = building;
+    }
+
+    public void setPrereqs(String prereqs) {
+        this.prereqs = prereqs;
+    }
+
+    public void setDescription(Description description) {
+        this.description = description;
+    }
+
     public HashSet<Student> getStudents() {
         return students;
     }

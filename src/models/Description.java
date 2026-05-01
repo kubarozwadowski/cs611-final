@@ -75,4 +75,18 @@ public class Description {
     public void setSyllabusText(String syllabusText) {
         this.syllabusText = syllabusText;
     }
+
+    public void setAssignmentWeights(Map<AssignmentType, Double> assignmentWeights) {
+        this.assignmentWeights.clear();
+        if (assignmentWeights != null) {
+            this.assignmentWeights.putAll(assignmentWeights);
+        }
+    }
+
+    public void setCustomAssignmentWeights(Map<String, Double> customAssignmentWeights) {
+        this.customAssignmentWeights.clear();
+        if (customAssignmentWeights != null) {
+            this.customAssignmentWeights.putAll(customAssignmentWeights);
+        }
+    }
 }
