@@ -67,6 +67,9 @@ public class DataSaver {
         rec.building = course.getBuilding();
         rec.prereqs = course.getPrereqs();
         rec.description = buildDescriptionRecord(course.getDescription());
+        for (Map.Entry<LetterGrade, Double> entry : course.getGradeCutoffs().entrySet()) {
+            rec.letterGradeCutoffs.put(entry.getKey().name(), entry.getValue());
+        }
 
         // Students — without submissions (stored separately below)
         for (Student student : course.getStudents()) {

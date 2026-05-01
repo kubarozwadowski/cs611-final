@@ -60,8 +60,15 @@ public class DataLoader {
 
     private Course buildCourse(CourseRecord rec) {
         Description description = buildDescription(rec.description);
+        java.util.EnumMap<LetterGrade, Double> cutoffs = null;
+        if (rec.letterGradeCutoffs != null && !rec.letterGradeCutoffs.isEmpty()) {
+            cutoffs = new java.util.EnumMap<>(LetterGrade.class);
+            for (Map.Entry<String, Double> entry : rec.letterGradeCutoffs.entrySet()) {
+                cutoffs.put(LetterGrade.valueOf(entry.getKey()), entry.getValue());
+            }
+        }
         Course course = new Course(rec.dept, rec.code, rec.name, description,
-                rec.meetingTimes, rec.building, rec.prereqs);
+                rec.meetingTimes, rec.building, rec.prereqs, cutoffs);
 
         // Reconstruct students
         Map<Integer, Student> studentById = new HashMap<>();

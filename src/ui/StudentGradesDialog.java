@@ -20,6 +20,7 @@ import models.Assignment;
 import models.Course;
 import models.Student;
 import models.Submission;
+import enums.LetterGrade;
 
 public class StudentGradesDialog extends JDialog {
     private final Course course;
@@ -132,8 +133,20 @@ public class StudentGradesDialog extends JDialog {
         totalPercentageLabel.setFont(totalPercentageLabel.getFont().deriveFont(java.awt.Font.BOLD));
         gradePanel.add(totalPercentageLabel, gbc);
 
-        // Add filler to push content to top
         gbc.gridy = rowIndex + 1;
+        gbc.gridx = 0;
+        JLabel letterLabel = new JLabel("Course Letter Grade");
+        letterLabel.setFont(letterLabel.getFont().deriveFont(java.awt.Font.BOLD));
+        gradePanel.add(letterLabel, gbc);
+
+        gbc.gridx = 3;
+        LetterGrade letterGrade = course.toLetterGrade(totalPercentage);
+        JLabel letterValueLabel = new JLabel(formatLetterGradeLabel(letterGrade));
+        letterValueLabel.setFont(letterValueLabel.getFont().deriveFont(java.awt.Font.BOLD));
+        gradePanel.add(letterValueLabel, gbc);
+
+        // Add filler to push content to top
+        gbc.gridy = rowIndex + 2;
         gbc.weighty = 1.0;
         gradePanel.add(new JPanel(), gbc);
 
@@ -153,5 +166,26 @@ public class StudentGradesDialog extends JDialog {
             }
         }
         return null;
+    }
+
+    private String formatLetterGradeLabel(LetterGrade grade) {
+        switch (grade) {
+            case A_MINUS:
+                return "A-";
+            case B_PLUS:
+                return "B+";
+            case B_MINUS:
+                return "B-";
+            case C_PLUS:
+                return "C+";
+            case C_MINUS:
+                return "C-";
+            case D_PLUS:
+                return "D+";
+            case D_MINUS:
+                return "D-";
+            default:
+                return grade.name();
+        }
     }
 }

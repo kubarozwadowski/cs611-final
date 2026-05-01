@@ -29,6 +29,7 @@ public class SaveData {
         String building;
         String prereqs;
         DescriptionRecord description;
+        Map<String, Double> letterGradeCutoffs = new HashMap<>(); // LetterGrade name -> minimum percentage
         List<StudentRecord> students = new ArrayList<>();
         List<AssignmentRecord> assignments = new ArrayList<>();
         List<SubmissionRecord> submissions = new ArrayList<>();

@@ -25,6 +25,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import enums.AssignmentType;
+import enums.LetterGrade;
 import logic.SemesterManager;
 import models.Course;
 import models.Description;
@@ -49,6 +50,8 @@ public class CourseFormDialog extends JDialog {
     private final List<CustomCategoryRow> customCategoryRows;
     private final JPanel customCategoryRowsPanel;
     private final JLabel weightsWarningLabel;
+    private final JCheckBox useCustomCutoffsCheckbox;
+    private final Map<LetterGrade, JTextField> gradeCutoffFields;
 
     public CourseFormDialog(Frame owner, SemesterManager semesterManager, Semester semester, Runnable onCourseCreated) {
         super(owner, "Add Course", true);
@@ -74,6 +77,23 @@ public class CourseFormDialog extends JDialog {
         customCategoryRows = new ArrayList<>();
         customCategoryRowsPanel = new JPanel(new GridBagLayout());
         weightsWarningLabel = new JLabel(formatWarningText("Selected category weights must add up to 100%. Current total: 0%"));
+        useCustomCutoffsCheckbox = new JCheckBox("Use custom letter grade cutoffs");
+        gradeCutoffFields = new EnumMap<>(LetterGrade.class);
+
+        for (LetterGrade letterGrade : LetterGrade.values()) {
+            JTextField field = new JTextField(6);
+            Double defaultCutoff = Course.getDefaultGradeCutoffs().get(letterGrade);
+            field.setText(defaultCutoff == null ? "" : String.valueOf(defaultCutoff));
+            field.setEnabled(false);
+            gradeCutoffFields.put(letterGrade, field);
+        }
+
+        useCustomCutoffsCheckbox.addActionListener(event -> {
+            boolean enabled = useCustomCutoffsCheckbox.isSelected();
+            for (JTextField field : gradeCutoffFields.values()) {
+                field.setEnabled(enabled);
+            }
+        });
 
         setLayout(new BorderLayout(12, 12));
         add(buildFormPanel(), BorderLayout.CENTER);
@@ -151,7 +171,52 @@ public class CourseFormDialog extends JDialog {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(weightsWarningLabel, gbc);
 
+        gbc.gridx = 0;
+        gbc.gridy = 10;
+        gbc.weightx = 0.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        panel.add(new JLabel("Grade Cutoffs"), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(buildGradeCutoffPanel(), gbc);
+
         updateWeightWarning();
+
+        return panel;
+    }
+
+    private JPanel buildGradeCutoffPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(2, 2, 2, 2);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 3;
+        panel.add(useCustomCutoffsCheckbox, gbc);
+
+        int row = 1;
+        for (LetterGrade grade : LetterGrade.values()) {
+            gbc.gridwidth = 1;
+            gbc.gridx = 0;
+            gbc.gridy = row;
+            gbc.weightx = 0.0;
+            panel.add(new JLabel(formatLetterGradeLabel(grade) + " min"), gbc);
+
+            gbc.gridx = 1;
+            gbc.weightx = 0.0;
+            panel.add(gradeCutoffFields.get(grade), gbc);
+
+            gbc.gridx = 2;
+            panel.add(new JLabel("%"), gbc);
+
+            row++;
+        }
 
         return panel;
     }
@@ -272,6 +337,27 @@ public class CourseFormDialog extends JDialog {
         return builder.toString();
     }
 
+    private String formatLetterGradeLabel(LetterGrade grade) {
+        switch (grade) {
+            case A_MINUS:
+                return "A-";
+            case B_PLUS:
+                return "B+";
+            case B_MINUS:
+                return "B-";
+            case C_PLUS:
+                return "C+";
+            case C_MINUS:
+                return "C-";
+            case D_PLUS:
+                return "D+";
+            case D_MINUS:
+                return "D-";
+            default:
+                return grade.name();
+        }
+    }
+
     private void addField(JPanel panel, GridBagConstraints gbc, int row, String label, JTextField field) {
         gbc.gridx = 0;
         gbc.gridy = row;
@@ -309,10 +395,11 @@ public class CourseFormDialog extends JDialog {
             String syllabusText = optionalText(syllabusArea.getText());
             Map<AssignmentType, Double> assignmentWeights = parseAssignmentWeights();
             Map<String, Double> customWeights = parseCustomAssignmentWeights();
+            Map<LetterGrade, Double> gradeCutoffs = parseGradeCutoffs();
             validateTotalWeight(assignmentWeights, customWeights);
 
             Description description = new Description(name, descriptionText, syllabusText, assignmentWeights, customWeights);
-            Course course = new Course(dept, code, name, description, meetingTimes, building, prereqs);
+            Course course = new Course(dept, code, name, description, meetingTimes, building, prereqs, gradeCutoffs);
 
             semesterManager.addCourseToSemester(semester, course);
             onCourseCreated.run();
@@ -383,6 +470,22 @@ public class CourseFormDialog extends JDialog {
         }
 
         return new java.util.LinkedHashMap<>(customAssignmentWeights);
+    }
+
+    private Map<LetterGrade, Double> parseGradeCutoffs() {
+        if (!useCustomCutoffsCheckbox.isSelected()) {
+            return Course.getDefaultGradeCutoffs();
+        }
+
+        Map<LetterGrade, Double> cutoffs = new EnumMap<>(LetterGrade.class);
+        for (LetterGrade grade : LetterGrade.values()) {
+            JTextField field = gradeCutoffFields.get(grade);
+            double cutoff = parseWeight(field.getText(), formatLetterGradeLabel(grade) + " cutoff");
+            cutoffs.put(grade, cutoff);
+        }
+
+        Course.validateGradeCutoffs(cutoffs);
+        return cutoffs;
     }
 
     private double parseWeight(String rawWeight, String fieldLabel) {
