@@ -38,6 +38,38 @@
           },
           "students": [
             {
+              "type": "UNDERGRAD",
+              "id": 1003,
+              "name": "Carol White",
+              "email": "carol@university.edu",
+              "gradYear": 2027,
+              "status": "UNDERGRADUATE",
+              "finalGrade": "F",
+              "currentGrade": "F",
+              "dob": {
+                "year": 0,
+                "month": 1,
+                "day": 1
+              },
+              "attendance": {}
+            },
+            {
+              "type": "UNDERGRAD",
+              "id": 1001,
+              "name": "Alice Johnson",
+              "email": "alice@university.edu",
+              "gradYear": 2027,
+              "status": "UNDERGRADUATE",
+              "finalGrade": "F",
+              "currentGrade": "F",
+              "dob": {
+                "year": 0,
+                "month": 1,
+                "day": 1
+              },
+              "attendance": {}
+            },
+            {
               "type": "GRAD",
               "id": 1004,
               "name": "David Lee",
@@ -71,10 +103,10 @@
             },
             {
               "type": "UNDERGRAD",
-              "id": 1003,
-              "name": "Carol White",
-              "email": "carol@university.edu",
-              "gradYear": 2027,
+              "id": 1006,
+              "name": "Frank Black",
+              "email": "fblack@bu.edu",
+              "gradYear": 2026,
               "status": "UNDERGRADUATE",
               "finalGrade": "F",
               "currentGrade": "F",
@@ -100,25 +132,31 @@
                 "day": 1
               },
               "attendance": {}
-            },
-            {
-              "type": "UNDERGRAD",
-              "id": 1001,
-              "name": "Alice Johnson",
-              "email": "alice@university.edu",
-              "gradYear": 2027,
-              "status": "UNDERGRADUATE",
-              "finalGrade": "F",
-              "currentGrade": "F",
-              "dob": {
-                "year": 0,
-                "month": 1,
-                "day": 1
-              },
-              "attendance": {}
             }
           ],
           "assignments": [
+            {
+              "id": 104,
+              "name": "Midterm Exam",
+              "type": "MIDTERM",
+              "totalPoints": 150,
+              "dueDate": {
+                "year": 2026,
+                "month": 3,
+                "day": 15,
+                "hour": 14,
+                "minute": 0
+              },
+              "latePenalty": 0.0,
+              "gradeBreakdown": {},
+              "description": {
+                "title": "Midterm",
+                "descriptionText": "Comprehensive midterm exam",
+                "syllabusText": "",
+                "assignmentWeights": {},
+                "customAssignmentWeights": {}
+              }
+            },
             {
               "id": 101,
               "name": "Homework 1",
@@ -164,28 +202,6 @@
               }
             },
             {
-              "id": 104,
-              "name": "Midterm Exam",
-              "type": "MIDTERM",
-              "totalPoints": 150,
-              "dueDate": {
-                "year": 2026,
-                "month": 3,
-                "day": 15,
-                "hour": 14,
-                "minute": 0
-              },
-              "latePenalty": 0.0,
-              "gradeBreakdown": {},
-              "description": {
-                "title": "Midterm",
-                "descriptionText": "Comprehensive midterm exam",
-                "syllabusText": "",
-                "assignmentWeights": {},
-                "customAssignmentWeights": {}
-              }
-            },
-            {
               "id": 105,
               "name": "Final Exam",
               "type": "FINAL",
@@ -202,6 +218,37 @@
               "description": {
                 "title": "Final",
                 "descriptionText": "Comprehensive final exam",
+                "syllabusText": "",
+                "assignmentWeights": {},
+                "customAssignmentWeights": {}
+              }
+            },
+            {
+              "id": 106,
+              "name": "Homework 2",
+              "type": "HOMEWORK",
+              "totalPoints": 3,
+              "dueDate": {
+                "year": 2026,
+                "month": 5,
+                "day": 1,
+                "hour": 23,
+                "minute": 59
+              },
+              "lateDueDate": {
+                "year": 2026,
+                "month": 5,
+                "day": 2,
+                "hour": 23,
+                "minute": 59
+              },
+              "latePenalty": 1.0,
+              "gradeBreakdown": {
+                "Submit": 3.0
+              },
+              "description": {
+                "title": "Homework 2",
+                "descriptionText": "Test Grade Import",
                 "syllabusText": "",
                 "assignmentWeights": {},
                 "customAssignmentWeights": {}
@@ -231,6 +278,178 @@
             }
           ],
           "submissions": [
+            {
+              "studentId": 1003,
+              "assignmentId": 101,
+              "pointsEarned": 98.0,
+              "penalty": 0.0,
+              "submissionDate": {
+                "year": 0,
+                "month": 1,
+                "day": 1
+              },
+              "gradingStatus": "GRADED",
+              "breakdownEarned": {},
+              "notes": ""
+            },
+            {
+              "studentId": 1003,
+              "assignmentId": 103,
+              "pointsEarned": 50.0,
+              "penalty": 0.0,
+              "submissionDate": {
+                "year": 0,
+                "month": 1,
+                "day": 1
+              },
+              "gradingStatus": "GRADED",
+              "breakdownEarned": {},
+              "notes": ""
+            },
+            {
+              "studentId": 1003,
+              "assignmentId": 102,
+              "pointsEarned": 100.0,
+              "penalty": 0.0,
+              "submissionDate": {
+                "year": 0,
+                "month": 1,
+                "day": 1
+              },
+              "gradingStatus": "GRADED",
+              "breakdownEarned": {},
+              "notes": ""
+            },
+            {
+              "studentId": 1003,
+              "assignmentId": 104,
+              "pointsEarned": 123.0,
+              "penalty": 0.0,
+              "submissionDate": {
+                "year": 0,
+                "month": 1,
+                "day": 1
+              },
+              "gradingStatus": "GRADED",
+              "breakdownEarned": {},
+              "notes": ""
+            },
+            {
+              "studentId": 1003,
+              "assignmentId": 105,
+              "pointsEarned": 188.0,
+              "penalty": 0.0,
+              "submissionDate": {
+                "year": 0,
+                "month": 1,
+                "day": 1
+              },
+              "gradingStatus": "GRADED",
+              "breakdownEarned": {},
+              "notes": ""
+            },
+            {
+              "studentId": 1003,
+              "assignmentId": 106,
+              "pointsEarned": 3.0,
+              "penalty": 0.0,
+              "submissionDate": {
+                "year": 2026,
+                "month": 4,
+                "day": 30,
+                "hour": 20,
+                "minute": 43
+              },
+              "gradingStatus": "GRADED",
+              "breakdownEarned": {},
+              "notes": ""
+            },
+            {
+              "studentId": 1001,
+              "assignmentId": 101,
+              "pointsEarned": 99.0,
+              "penalty": 0.0,
+              "submissionDate": {
+                "year": 0,
+                "month": 1,
+                "day": 1
+              },
+              "gradingStatus": "GRADED",
+              "breakdownEarned": {},
+              "notes": ""
+            },
+            {
+              "studentId": 1001,
+              "assignmentId": 103,
+              "pointsEarned": 49.0,
+              "penalty": 0.0,
+              "submissionDate": {
+                "year": 0,
+                "month": 1,
+                "day": 1
+              },
+              "gradingStatus": "GRADED",
+              "breakdownEarned": {},
+              "notes": ""
+            },
+            {
+              "studentId": 1001,
+              "assignmentId": 102,
+              "pointsEarned": 100.0,
+              "penalty": 0.0,
+              "submissionDate": {
+                "year": 0,
+                "month": 1,
+                "day": 1
+              },
+              "gradingStatus": "GRADED",
+              "breakdownEarned": {},
+              "notes": ""
+            },
+            {
+              "studentId": 1001,
+              "assignmentId": 104,
+              "pointsEarned": 100.0,
+              "penalty": 0.0,
+              "submissionDate": {
+                "year": 0,
+                "month": 1,
+                "day": 1
+              },
+              "gradingStatus": "GRADED",
+              "breakdownEarned": {},
+              "notes": ""
+            },
+            {
+              "studentId": 1001,
+              "assignmentId": 105,
+              "pointsEarned": 150.0,
+              "penalty": 0.0,
+              "submissionDate": {
+                "year": 0,
+                "month": 1,
+                "day": 1
+              },
+              "gradingStatus": "GRADED",
+              "breakdownEarned": {},
+              "notes": ""
+            },
+            {
+              "studentId": 1001,
+              "assignmentId": 106,
+              "pointsEarned": 3.0,
+              "penalty": 0.0,
+              "submissionDate": {
+                "year": 2026,
+                "month": 4,
+                "day": 30,
+                "hour": 20,
+                "minute": 43
+              },
+              "gradingStatus": "GRADED",
+              "breakdownEarned": {},
+              "notes": ""
+            },
             {
               "studentId": 1004,
               "assignmentId": 101,
@@ -296,6 +515,22 @@
                 "year": 0,
                 "month": 1,
                 "day": 1
+              },
+              "gradingStatus": "GRADED",
+              "breakdownEarned": {},
+              "notes": ""
+            },
+            {
+              "studentId": 1004,
+              "assignmentId": 106,
+              "pointsEarned": 2.0,
+              "penalty": 0.0,
+              "submissionDate": {
+                "year": 2026,
+                "month": 5,
+                "day": 2,
+                "hour": 16,
+                "minute": 36
               },
               "gradingStatus": "GRADED",
               "breakdownEarned": {},
@@ -372,65 +607,25 @@
               "notes": ""
             },
             {
-              "studentId": 1003,
-              "assignmentId": 101,
-              "pointsEarned": 98.0,
+              "studentId": 1005,
+              "assignmentId": 106,
+              "pointsEarned": 2.0,
               "penalty": 0.0,
               "submissionDate": {
-                "year": 0,
-                "month": 1,
-                "day": 1
+                "year": 2026,
+                "month": 5,
+                "day": 2,
+                "hour": 16,
+                "minute": 36
               },
               "gradingStatus": "GRADED",
               "breakdownEarned": {},
               "notes": ""
             },
             {
-              "studentId": 1003,
-              "assignmentId": 103,
-              "pointsEarned": 50.0,
-              "penalty": 0.0,
-              "submissionDate": {
-                "year": 0,
-                "month": 1,
-                "day": 1
-              },
-              "gradingStatus": "GRADED",
-              "breakdownEarned": {},
-              "notes": ""
-            },
-            {
-              "studentId": 1003,
-              "assignmentId": 102,
-              "pointsEarned": 100.0,
-              "penalty": 0.0,
-              "submissionDate": {
-                "year": 0,
-                "month": 1,
-                "day": 1
-              },
-              "gradingStatus": "GRADED",
-              "breakdownEarned": {},
-              "notes": ""
-            },
-            {
-              "studentId": 1003,
-              "assignmentId": 104,
-              "pointsEarned": 123.0,
-              "penalty": 0.0,
-              "submissionDate": {
-                "year": 0,
-                "month": 1,
-                "day": 1
-              },
-              "gradingStatus": "GRADED",
-              "breakdownEarned": {},
-              "notes": ""
-            },
-            {
-              "studentId": 1003,
-              "assignmentId": 105,
-              "pointsEarned": 188.0,
+              "studentId": 1006,
+              "assignmentId": 106,
+              "pointsEarned": 0.0,
               "penalty": 0.0,
               "submissionDate": {
                 "year": 0,
@@ -512,70 +707,16 @@
               "notes": ""
             },
             {
-              "studentId": 1001,
-              "assignmentId": 101,
-              "pointsEarned": 99.0,
+              "studentId": 1002,
+              "assignmentId": 106,
+              "pointsEarned": 3.0,
               "penalty": 0.0,
               "submissionDate": {
-                "year": 0,
-                "month": 1,
-                "day": 1
-              },
-              "gradingStatus": "GRADED",
-              "breakdownEarned": {},
-              "notes": ""
-            },
-            {
-              "studentId": 1001,
-              "assignmentId": 103,
-              "pointsEarned": 49.0,
-              "penalty": 0.0,
-              "submissionDate": {
-                "year": 0,
-                "month": 1,
-                "day": 1
-              },
-              "gradingStatus": "GRADED",
-              "breakdownEarned": {},
-              "notes": ""
-            },
-            {
-              "studentId": 1001,
-              "assignmentId": 102,
-              "pointsEarned": 100.0,
-              "penalty": 0.0,
-              "submissionDate": {
-                "year": 0,
-                "month": 1,
-                "day": 1
-              },
-              "gradingStatus": "GRADED",
-              "breakdownEarned": {},
-              "notes": ""
-            },
-            {
-              "studentId": 1001,
-              "assignmentId": 104,
-              "pointsEarned": 100.0,
-              "penalty": 0.0,
-              "submissionDate": {
-                "year": 0,
-                "month": 1,
-                "day": 1
-              },
-              "gradingStatus": "GRADED",
-              "breakdownEarned": {},
-              "notes": ""
-            },
-            {
-              "studentId": 1001,
-              "assignmentId": 105,
-              "pointsEarned": 150.0,
-              "penalty": 0.0,
-              "submissionDate": {
-                "year": 0,
-                "month": 1,
-                "day": 1
+                "year": 2026,
+                "month": 4,
+                "day": 30,
+                "hour": 20,
+                "minute": 43
               },
               "gradingStatus": "GRADED",
               "breakdownEarned": {},
@@ -587,7 +728,8 @@
             "1002": "A",
             "1003": "A",
             "1004": "A",
-            "1005": "A"
+            "1005": "A",
+            "1006": "A"
           }
         }
       ]

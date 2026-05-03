@@ -286,7 +286,17 @@ public class CourseDetailFrame extends JFrame {
 
         JButton addAssignmentButton = new JButton("Add Assignment");
         addAssignmentButton.addActionListener(event -> openAssignmentDialog(dialog));
-        
+
+        JButton viewDetailsButton = new JButton("View Details");
+        viewDetailsButton.setEnabled(false);
+        viewDetailsButton.addActionListener(event -> {
+            Assignment selectedAssignment = assignmentList.getSelectedValue();
+            if (selectedAssignment != null) {
+                AssignmentDetailDialog detailDialog = new AssignmentDetailDialog(dialog, selectedAssignment);
+                detailDialog.setVisible(true);
+            }
+        });
+
         JButton gradeButton = new JButton("Grade");
         gradeButton.setEnabled(false);
         gradeButton.addActionListener(event -> {
@@ -295,14 +305,19 @@ public class CourseDetailFrame extends JFrame {
                 openGradeAssignmentDialog(dialog, selectedAssignment);
             }
         });
-        
-        assignmentList.addListSelectionListener(event -> gradeButton.setEnabled(assignmentList.getSelectedValue() != null));
-        
+
+        assignmentList.addListSelectionListener(event -> {
+            boolean selected = assignmentList.getSelectedValue() != null;
+            viewDetailsButton.setEnabled(selected);
+            gradeButton.setEnabled(selected);
+        });
+
         JButton closeButton = new JButton("Close");
         closeButton.addActionListener(event -> dialog.dispose());
 
         JPanel buttonsPanel = new JPanel();
         buttonsPanel.add(addAssignmentButton);
+        buttonsPanel.add(viewDetailsButton);
         buttonsPanel.add(gradeButton);
         buttonsPanel.add(closeButton);
         dialog.add(buttonsPanel, BorderLayout.SOUTH);

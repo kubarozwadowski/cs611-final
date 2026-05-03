@@ -20,12 +20,17 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import java.io.File;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
 import logic.SemesterManager;
 import models.Assignment;
 import models.Course;
 import models.Date;
 import models.Student;
 import models.Submission;
+import storage.CSVGradeImporter;
 import storage.StorageManager;
 
 public class GradeAssignmentDialog extends JDialog {
@@ -95,6 +100,9 @@ public class GradeAssignmentDialog extends JDialog {
         formPanel.add(new JPanel(), gbc);
 
         // Add button panel
+        JButton importButton = new JButton("Import CSV");
+        importButton.addActionListener(event -> importFromCSV());
+
         JButton saveButton = new JButton("Save Grades");
         saveButton.addActionListener(event -> saveGrades());
 
@@ -102,6 +110,7 @@ public class GradeAssignmentDialog extends JDialog {
         cancelButton.addActionListener(event -> dispose());
 
         JPanel buttonPanel = new JPanel();
+        buttonPanel.add(importButton);
         buttonPanel.add(saveButton);
         buttonPanel.add(cancelButton);
         add(buttonPanel, BorderLayout.SOUTH);
@@ -119,6 +128,43 @@ public class GradeAssignmentDialog extends JDialog {
         Submission newSubmission = new Submission(assignment, student, new Date());
         student.getSubmissions().add(newSubmission);
         return newSubmission;
+    }
+
+    private void importFromCSV() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Select Grade CSV");
+        fileChooser.setFileFilter(new FileNameExtensionFilter("CSV Files (*.csv)", "csv"));
+
+        if (fileChooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
+
+        File file = fileChooser.getSelectedFile();
+        CSVGradeImporter importer = new CSVGradeImporter(course, assignment);
+        CSVGradeImporter.ImportResult result = importer.importFromFile(file);
+
+        // Refresh the points fields to reflect imported grades
+        for (StudentGradeRow row : gradeRows) {
+            double points = row.submission.getPointsEarned();
+            if (row.submission.isGraded()) {
+                row.pointsField.setText(points == 0 ? "0" : String.valueOf(points));
+            }
+        }
+
+        // Save and show result
+        StorageManager.getInstance().save(semesterManager);
+
+        StringBuilder message = new StringBuilder();
+        message.append("Import complete.\n");
+        message.append("Graded: ").append(result.imported).append(" students\n");
+        message.append("Skipped: ").append(result.skipped).append(" rows\n");
+        if (!result.warnings.isEmpty()) {
+            message.append("\nWarnings:\n");
+            for (String warning : result.warnings) {
+                message.append("  • ").append(warning).append("\n");
+            }
+        }
+
+        JOptionPane.showMessageDialog(this, message.toString(), "Import Result",
+                result.warnings.isEmpty() ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.WARNING_MESSAGE);
     }
 
     private void saveGrades() {
