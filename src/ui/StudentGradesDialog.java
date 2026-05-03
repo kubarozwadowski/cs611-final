@@ -16,6 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 
+import logic.GradeCalculator;
 import models.Assignment;
 import models.Course;
 import models.Student;
@@ -128,8 +129,8 @@ public class StudentGradesDialog extends JDialog {
         gradePanel.add(totalEarnedLabel, gbc);
 
         gbc.gridx = 3;
-        double totalPercentage = totalPointsPossible > 0 ? (totalPointsEarned / totalPointsPossible) * 100 : 0;
-        JLabel totalPercentageLabel = new JLabel(String.format("%.1f%%", totalPercentage));
+        double weightedPercentage = new GradeCalculator(course).calculateStudentGrade(student);
+        JLabel totalPercentageLabel = new JLabel(String.format("%.1f%% (weighted)", weightedPercentage));
         totalPercentageLabel.setFont(totalPercentageLabel.getFont().deriveFont(java.awt.Font.BOLD));
         gradePanel.add(totalPercentageLabel, gbc);
 
@@ -140,7 +141,7 @@ public class StudentGradesDialog extends JDialog {
         gradePanel.add(letterLabel, gbc);
 
         gbc.gridx = 3;
-        LetterGrade letterGrade = course.toLetterGrade(totalPercentage);
+        LetterGrade letterGrade = student.getCurrentGrade() != null ? student.getCurrentGrade() : course.toLetterGrade(weightedPercentage);
         JLabel letterValueLabel = new JLabel(formatLetterGradeLabel(letterGrade));
         letterValueLabel.setFont(letterValueLabel.getFont().deriveFont(java.awt.Font.BOLD));
         gradePanel.add(letterValueLabel, gbc);

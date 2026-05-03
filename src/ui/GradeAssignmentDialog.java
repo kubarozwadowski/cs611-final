@@ -24,6 +24,7 @@ import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import logic.GradeCalculator;
 import logic.SemesterManager;
 import models.Assignment;
 import models.Course;
@@ -149,7 +150,8 @@ public class GradeAssignmentDialog extends JDialog {
             }
         }
 
-        // Save and show result
+        // Recalculate weighted grades and save
+        new GradeCalculator(course).calculateAllGrades();
         StorageManager.getInstance().save(semesterManager);
 
         StringBuilder message = new StringBuilder();
@@ -205,6 +207,7 @@ public class GradeAssignmentDialog extends JDialog {
                 row.submission.grade();
             }
 
+            new GradeCalculator(course).calculateAllGrades();
             StorageManager.getInstance().save(semesterManager);
             JOptionPane.showMessageDialog(this, "Grades saved successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
             dispose();
