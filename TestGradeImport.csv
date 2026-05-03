@@ -1,0 +1,7 @@
+First Name,Last Name,SID,Email,Total Score,Max Points,Status,Submission ID,Submission Time,Lateness (H:M:S),View Count,Submission Count,1: Report (3.0 pts)
+Alice,Johnson,1001,aj@bu.edu,3.0,3.0,Graded,410574671,2026-04-30 20:43:30 -0400,00:00:00,0,2,3.0
+Bob,Smith,1002,bs@bu.edu,3.0,3.0,Graded,410574671,2026-04-30 20:43:30 -0400,00:00:00,0,2,3.0
+Carol,White,1003,cw@bu.edu,3.0,3.0,Graded,410574671,2026-04-30 20:43:30 -0400,00:00:00,0,2,3.0
+David,Lee,1004,dl@bu.edu,3.0,3.0,Graded,411056964,2026-05-02 16:36:25 -0400,16:37:25,0,2,3.0
+Eve,Martinez,1005,em@bu.edu,3.0,3.0,Graded,411056964,2026-05-02 16:36:25 -0400,16:37:25,0,2,3.0
+Frank,Black,1006,fb@bu.edu,,3.0,Missing,,,,,,
