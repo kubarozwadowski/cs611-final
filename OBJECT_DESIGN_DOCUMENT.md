@@ -4,7 +4,7 @@
 
 This document outlines the overall design choices made for the grading system final project for CS 611.
 
-## Core object model
+## Core Object Model
 
 ### SemesterManager
 
@@ -12,7 +12,7 @@ The `SemesterManager` keeps track and manages all of the semesters that have bee
 
 See [SemesterManager.java](src/logic/SemesterManager.java#L10-L60).
 
-**Design choice:**
+**Design Choice:**
 This class acts as the application’s coordination point for semester and course management. Centralizing the validation here keeps the GUI simple and avoids duplicating rules across multiple screens.
 
 ### Semester
@@ -23,7 +23,7 @@ At the highest level our structure starts with semesters. This is the highest le
 
 See [Semester.java](src/models/Semester.java#L1-L40).
 
-**Design choice:**
+**Design Choice:**
 A semester only needs a label and a list of courses, so the class stays small and focused. This makes the object easy to store, display, and serialize.
 
 It also helps organizationally by breaking down courses to a semester level which is easier to manage than having all courses ever taught being shown on the same screen.
@@ -39,7 +39,7 @@ Important parts include:
 - validation in [Course.java](src/models/Course.java#L62-L84)
 - grade cutoff access and conversion in [Course.java](src/models/Course.java#L163-L176)
 
-**Design choice:**
+**Design Choice:**
 Letter-grade thresholds are stored per course instead of globally. This allows different courses to follow different grading policies without changing the rest of the system.
 
 ### Description
@@ -56,11 +56,11 @@ It can be used for:
 
 See [Description.java](src/models/Description.java#L55-L62) and [Description.java](src/models/Description.java#L79-L90).
 
-**Design choice:**
+**Design Choice:**
 
-Having this metadata be its own object helps make other classes as simple as possible and pushes the management of complicated descriptions to another object for management instead of repeating these methods and fields across every class that might have some similar uses. 
+Having this metadata be its own object helps make other classes as simple as possible and delegates the management of complicated descriptions to another object for management instead of repeating these methods and fields across every class that might have some similar uses. 
 
-### Student hierarchy
+### Student Hierarchy
 
 `Student` is the abstract base class for student records, while `UndergradStudent` and `GradStudent` provide concrete student types.
 
@@ -70,7 +70,7 @@ Having this metadata be its own object helps make other classes as simple as pos
 
 `Student` stores identity, contact information, attendance, submissions, and current/final grades. It also computes attendance rate in [Student.java](src/models/Student.java#L73-L86).
 
-**Design choice:**
+**Design Choice:**
 Inheritance is appropriate here because undergrad and graduate students share the same core behavior and differ mainly by type. This reduces duplication while still preserving student category information.
 
 It also allows for later extension if a course needs to treat different student types differently, potentially grading them on separate curves, etc.
@@ -91,7 +91,7 @@ It includes:
 
 Useful methods include the display label in [Assignment.java](src/models/Assignment.java#L104-L110) and mutators for editable fields in [Assignment.java](src/models/Assignment.java#L116-L135).
 
-**Design choice:**
+**Design Choice:**
 The assignment model supports both predefined types and custom types so the system can handle a variety of course structures.
 
 ### Submission
@@ -108,12 +108,12 @@ Key behavior includes:
 
 See [Submission.java](src/models/Submission.java#L50-L66).
 
-**Design choice:**
+**Design Choice:**
 The reason this is separate from the assignment class is that in real life there is a logical distinction between an assignment itself and each submission by a student. We wanted to keep this distinction clear in our software as well.
 
 While the assignment itself outlines the requirements and details of the assignment, we wanted submissiosn to be individualized to the student and their own logical entities. 
 
-## GUI structure and relationship to the model
+## GUI Structure and Relationship to the Model
 
 The GUI is based on a hierarchical structure that follows the nested structure our classes follow. Because of the similarity to a file system with different levels of objects we designed the GUI to follow that pattern. It starts with the highest level organization, and gets more granular as you move into deeper layers.
 
@@ -125,31 +125,31 @@ The main layers can be listed below:
 
 The course detail screen is the main interaction point for a course. It provides sections for students, assignments, grade cutoffs, and settings. The section layout is built in [CourseDetailFrame.java](src/ui/CourseDetailFrame.java#L89-L92) and the section rows themselves are built in [CourseDetailFrame.java](src/ui/CourseDetailFrame.java#L105-L130).
 
-### Students section
+### Students Section
 
 The students section lets the user add students and view student grades.
 
 See the student dialog flow in [CourseDetailFrame.java](src/ui/CourseDetailFrame.java#L132-L260).
 
-### Assignments section
+### Assignments Section
 
 The assignments section lets the user create and grade assignments.
 
 See [CourseDetailFrame.java](src/ui/CourseDetailFrame.java#L262-L312).
 
-### Grade Cutoffs section
+### Grade Cutoffs Section
 
 The grade cutoff editor lets the user modify course-specific letter grade thresholds and immediately preview the resulting grade distribution.
 
 See [CourseDetailFrame.java](src/ui/CourseDetailFrame.java#L639-L760).
 
-### Settings section
+### Settings Section
 
 The settings dialog lets the user edit the course’s core configuration, including dept, code, name, meeting times, building, prereqs, description, syllabus, assignment categories, and custom assignment weights.
 
 See [CourseDetailFrame.java](src/ui/CourseDetailFrame.java#L313-L638).
 
-### Student grades dialog
+### Student Grades Dialog
 
 The student grades dialog shows assignment-level scores and the overall letter grade using the course’s current cutoff settings.
 
@@ -158,20 +158,38 @@ See [StudentGradesDialog.java](src/ui/StudentGradesDialog.java#L25-L180).
 **Design choice:**
 Each GUI screen is a thin layer over the model. The UI gathers input, validates it, updates the model, and then saves. That keeps business rules in the model and out of the view layer.
 
-## Persistence design
+## Persistence Design
 
-...
+The application persists all data to a single JSON file at data/grading_data.json using the Gson library. The storage layer is split across four classes:
 
-**Design choice:**
-...
+[StorageManager.java](src/storage/StorageManager.java) — facade that configures Gson and exposes save() and load() to the rest of the application. All other layers go through this class so the Gson instance and file path are never duplicated. 
+[SaveData.java](src/storage/SaveData.java) — a collection of plain Data Transfer Object inner classes (SemesterRecord, CourseRecord, StudentRecord, AssignmentRecord, SubmissionRecord, DescriptionRecord, DateRecord). These mirror the live model classes but contain only primitive fields and IDs, with no object references.
+[DataSaver.java](src/storage/DataSaver.java) — recurses through object references, converts each object to its corresponding DTO, and writes the resulting structure to disk as JSON. 
+[DataLoader.java](src/storage/DataLoader.java) — reads the JSON file back into DTOs, then reconstructs the Java objects. 
 
-## Data flow
+**Design Choice:**
+The models have circular references. A Submission holds a reference to both a Student and an Assignment, while a Student holds a list of Submission objects. Gson cannot serialize this directly without hitting a stack overflow. The DTO layer breaks the cycle by replacing object references with integer IDs instead. SubmissionRecord stores only a studentId and assignmentId. On load, DataLoader first builds lookup maps of all students and assignments by ID, then resolves those IDs into live references when reconstructing submissions. This use of DTOs allows the objects to be (de)serialized in a safe way.
 
-... 
+Gson's RuntimeTypeAdapterFactory handles the Student polymorphism. When saving, it writes a "type" discriminator field ("UNDERGRAD" or "GRAD") into each student record. On load, it reads that field and instantiates the correct subclass. This means UndergradStudent and GradStudent survive the (de)serializaiton without any manual type-checking. See [RuntimeTypeAdapterFactory.java](src/storage/RuntimeTypeAdapterFactory.java).
 
-## Benefits of this design
+**Data Flow:**
 
-### Separation of concerns
+*Saving:*
+Any screen that mutates state (adding a student, grading an assignment, changing settings) calls StorageManager.getInstance().save(semesterManager) immediately after updating the model.
+DataSaver iterates the SemesterManager and converts each live object to its DTO equivalent. Submissions are reduced to (studentId, assignmentId, pointsEarned, penalty, gradingStatus, submissionDate).
+The full DTO tree is serialized to JSON and written to data/grading_data.json.
+
+*Loading:*
+On startup, Main calls StorageManager.getInstance().load().
+DataLoader reads the JSON file and deserializes it into the DTO tree.
+All Student and Assignment objects are reconstructed and indexed by ID.
+Submission records are resolved by looking up studentId and assignmentId in those maps, producing fully linked live objects.
+If the file does not exist, load() returns null and Main seeds sample data instead.
+
+
+## Benefits of this Design
+
+### Separation of Concerns
 The project separates data, logic, persistence, and GUI. This makes the system easier to understand and maintain.
 
 ### Extensibility
@@ -189,8 +207,9 @@ Because the model is separate from the GUI, the same course and student objects 
 ### Maintainability
 Centralized validation in `SemesterManager` and `Course` reduces duplicated logic and helps prevent inconsistent state.
 
-### Persistence safety
-...
+### Persistence Safety
+Saves are synchronous and are called from the frontend, so the file is always written before the user can trigger another action. This means the file always reflects the latest state. If the data/ directory does not exist it is created automatically on first save. If it is ever the case that there is no data file present the application seeds sample data rather than crashing, ensuring the system is always in a valid state.
+
 
 ## Summary
 
