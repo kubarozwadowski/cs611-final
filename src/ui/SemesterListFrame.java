@@ -53,12 +53,15 @@ public class SemesterListFrame extends JFrame {
 
         JButton addSemesterButton = new JButton("Add Semester");
         JButton openSemesterButton = new JButton("Open Semester");
+        JButton summaryButton = new JButton("Summary");
 
         addSemesterButton.addActionListener(event -> addSemester());
         openSemesterButton.addActionListener(event -> openSelectedSemester());
+        summaryButton.addActionListener(event -> showSemesterSummary());
 
         panel.add(addSemesterButton);
         panel.add(openSemesterButton);
+        panel.add(summaryButton);
         return panel;
     }
 
@@ -76,6 +79,15 @@ public class SemesterListFrame extends JFrame {
         } catch (IllegalArgumentException exception) {
             JOptionPane.showMessageDialog(this, exception.getMessage(), "Unable to Add Semester", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private void showSemesterSummary() {
+        Semester selected = semesterList.getSelectedValue();
+        if (selected == null) {
+            JOptionPane.showMessageDialog(this, "Select a semester first.", "No Semester Selected", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        JOptionPane.showMessageDialog(this, selected.getSummary(), "Summary — " + selected.getLabel(), JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void openSelectedSemester() {

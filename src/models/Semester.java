@@ -2,7 +2,9 @@ package models;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import interfaces.Summarizable;
 
@@ -32,7 +34,16 @@ public class Semester implements Summarizable{
         return label;
     }
 
-    public String getSummary(){
-        return "Incomplete";
+    public String getSummary() {
+        int totalAssignments = 0;
+        Set<Student> uniqueStudents = new HashSet<>();
+        for (Course course : courses) {
+            totalAssignments += course.getAssignments().size();
+            uniqueStudents.addAll(course.getStudents());
+        }
+        return label
+                + " | " + courses.size() + " course(s)"
+                + " | " + uniqueStudents.size() + " student(s)"
+                + " | " + totalAssignments + " assignment(s)";
     }
 }

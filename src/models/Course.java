@@ -193,8 +193,11 @@ public class Course implements Summarizable{
         return dept + " " + code + " - " + name;
     }
 
-    public String getSummary(){
-        return "Placeholder";
+    public String getSummary() {
+        return dept + " " + code + " — " + name
+                + " | " + students.size() + " student(s)"
+                + " | " + assignments.size() + " assignment(s)"
+                + " | Meeting: " + (meetingTimes == null || meetingTimes.isEmpty() ? "TBD" : meetingTimes);
     }
 
     @Override

@@ -92,10 +92,17 @@ public class CourseDetailFrame extends JFrame {
         sectionsPanel.add(buildSectionRow("Settings", settingsSummaryLabel, "Open", this::openSettingsPlaceholder));
         add(sectionsPanel, BorderLayout.CENTER);
 
+        JButton summaryButton = new JButton("Course Summary");
+        summaryButton.addActionListener(event -> {
+            CourseSummaryDialog dialog = new CourseSummaryDialog(null, course);
+            dialog.setVisible(true);
+        });
+
         JButton closeButton = new JButton("Close");
         closeButton.addActionListener(event -> dispose());
 
         JPanel buttonPanel = new JPanel();
+        buttonPanel.add(summaryButton);
         buttonPanel.add(closeButton);
         add(buttonPanel, BorderLayout.SOUTH);
 
