@@ -7,14 +7,17 @@ public class Date implements Comparable<Date> {
     private final Integer hour;
     private final Integer minute;
 
+    // Default constructor initializing to year 0, month 1, day 1
     public Date() {
         this(0, 1, 1, null, null);
     }
 
+    // Constructor for date without time
     public Date(int year, int month, int day) {
         this(year, month, day, null, null);
     }
 
+    // Constructor for date with optional time
     public Date(int year, int month, int day, Integer hour, Integer minute) {
         validateDateParts(year, month, day, hour, minute);
         this.year = year;
@@ -24,26 +27,32 @@ public class Date implements Comparable<Date> {
         this.minute = minute;
     }
 
+    // Getter for year
     public int getYear() {
         return year;
     }
 
+    // Getter for month
     public int getMonth() {
         return month;
     }
 
+    // Getter for day
     public int getDay() {
         return day;
     }
 
+    // Getter for hour
     public Integer getHour() {
         return hour;
     }
 
+    // Getter for minute
     public Integer getMinute() {
         return minute;
     }
 
+    // Compares this date with another date
     @Override
     public int compareTo(Date other) {
         if (other == null) {
@@ -77,6 +86,7 @@ public class Date implements Comparable<Date> {
         return Integer.compare(thisMinute, otherMinute);
     }
 
+    // Returns a formatted string representation of the date
     @Override
     public String toString() {
         String dateString = String.format("%04d-%02d-%02d", year, month, day);
@@ -86,6 +96,7 @@ public class Date implements Comparable<Date> {
         return dateString + " " + String.format("%02d:%02d", hour, minute);
     }
 
+    // Validates all date components
     private void validateDateParts(int year, int month, int day, Integer hour, Integer minute) {
         if (month < 1 || month > 12) {
             throw new IllegalArgumentException("Month must be between 1 and 12.");

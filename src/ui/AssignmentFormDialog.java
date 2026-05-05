@@ -53,6 +53,7 @@ public class AssignmentFormDialog extends JDialog {
     private final JPanel breakdownRowsPanel;
     private final JLabel breakdownTotalLabel;
 
+    // Initializes the dialog with form fields and layout
     public AssignmentFormDialog(Dialog owner, Course course, Runnable onAssignmentCreated) {
         super(owner, "Add Assignment", true);
         this.course = course;
@@ -92,6 +93,7 @@ public class AssignmentFormDialog extends JDialog {
         setLocationRelativeTo(owner);
     }
 
+    // Builds the main form panel with all input fields
     private JPanel buildFormPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -155,6 +157,7 @@ public class AssignmentFormDialog extends JDialog {
         return panel;
     }
 
+    // Builds the panel for entering the due date
     private JPanel buildDueDatePanel() {
         JPanel panel = new JPanel();
         panel.add(new JLabel("Year"));
@@ -170,6 +173,7 @@ public class AssignmentFormDialog extends JDialog {
         return panel;
     }
 
+    // Builds the panel for entering the late due date
     private JPanel buildLateDueDatePanel() {
         JPanel panel = new JPanel();
         panel.add(new JLabel("Year"));
@@ -185,6 +189,7 @@ public class AssignmentFormDialog extends JDialog {
         return panel;
     }
 
+    // Builds the panel for defining grade breakdown items
     private JPanel buildBreakdownPanel() {
         JPanel panel = new JPanel(new BorderLayout(6, 6));
 
@@ -197,6 +202,7 @@ public class AssignmentFormDialog extends JDialog {
         return panel;
     }
 
+    // Adds a new breakdown row and refreshes the display
     private void addBreakdownRow() {
         BreakdownRow row = new BreakdownRow();
         breakdownRows.add(row);
@@ -205,6 +211,7 @@ public class AssignmentFormDialog extends JDialog {
         pack();
     }
 
+    // Refreshes the display of all breakdown rows
     private void refreshBreakdownRowsPanel() {
         breakdownRowsPanel.removeAll();
 
@@ -236,6 +243,7 @@ public class AssignmentFormDialog extends JDialog {
         breakdownRowsPanel.repaint();
     }
 
+    // Updates the label showing the total breakdown points and validation status
     private void updateBreakdownTotalLabel() {
         double breakdownTotal = 0.0;
         boolean hasInvalidNumber = false;
@@ -278,6 +286,7 @@ public class AssignmentFormDialog extends JDialog {
         }
     }
 
+    // Formats points for display, showing integers without decimals
     private String formatPoints(double value) {
         if (Math.abs(value - Math.rint(value)) < 0.0001) {
             return Integer.toString((int) Math.rint(value));
@@ -293,6 +302,7 @@ public class AssignmentFormDialog extends JDialog {
         return value > 0 ? "+" + formatted : "-" + formatted;
     }
 
+    // Builds the panel with Cancel and Save buttons
     private JPanel buildButtonPanel() {
         JPanel panel = new JPanel();
         JButton cancelButton = new JButton("Cancel");
@@ -306,6 +316,7 @@ public class AssignmentFormDialog extends JDialog {
         return panel;
     }
 
+    // Validates form input and saves the new assignment to the course
     private void saveAssignment() {
         try {
             String name = requireText(nameField.getText(), "Assignment name");
@@ -350,6 +361,7 @@ public class AssignmentFormDialog extends JDialog {
         }
     }
 
+    // Returns array of available assignment types from the course
     private AssignmentTypeOption[] getAvailableAssignmentTypes() {
         List<AssignmentTypeOption> availableTypes = new ArrayList<>();
 
@@ -366,6 +378,7 @@ public class AssignmentFormDialog extends JDialog {
         return availableTypes.toArray(new AssignmentTypeOption[0]);
     }
 
+    // Parses and validates the grade breakdown items
     private Map<String, Double> parseGradeBreakdown(int totalPoints) {
         if (breakdownRows.isEmpty()) {
             throw new IllegalArgumentException("Add at least one breakdown item.");
@@ -410,6 +423,7 @@ public class AssignmentFormDialog extends JDialog {
         return breakdown;
     }
 
+    // Parses the due date from input fields
     private Date parseDueDate() {
         int year = parseInteger(requireText(yearField.getText(), "Due year"), "Due year");
         int month = parseInteger(requireText(monthField.getText(), "Due month"), "Due month");
@@ -429,6 +443,7 @@ public class AssignmentFormDialog extends JDialog {
         return new Date(year, month, day, hour, minute);
     }
 
+    // Parses the late due date from input fields, returning null if not provided
     private Date parseLateDueDate() {
         String year  = optionalText(lateYearField.getText());
         String month = optionalText(lateMonthField.getText());
@@ -454,6 +469,7 @@ public class AssignmentFormDialog extends JDialog {
         return new Date(y, m, d, hour, minute);
     }
 
+    // Parses and validates the late penalty value
     private double parseLatePenalty(int totalPoints) {
         String text = optionalText(latePenaltyField.getText());
         if (text.isEmpty()) return 0;
@@ -465,6 +481,7 @@ public class AssignmentFormDialog extends JDialog {
         return penalty;
     }
 
+    // Generates the next available assignment ID for the course
     private int nextAssignmentId() {
         int nextId = 1;
         for (Assignment assignment : course.getAssignments()) {
@@ -473,6 +490,7 @@ public class AssignmentFormDialog extends JDialog {
         return nextId;
     }
 
+    // Helper method to add a labeled text field to the form panel
     private void addField(JPanel panel, GridBagConstraints gbc, int row, String label, JTextField field) {
         gbc.gridx = 0;
         gbc.gridy = row;
@@ -485,6 +503,7 @@ public class AssignmentFormDialog extends JDialog {
         panel.add(field, gbc);
     }
 
+    // Validates that a field contains non-empty text
     private String requireText(String value, String fieldName) {
         if (value == null || value.trim().isEmpty()) {
             throw new IllegalArgumentException(fieldName + " is required.");
@@ -492,10 +511,12 @@ public class AssignmentFormDialog extends JDialog {
         return value.trim();
     }
 
+    // Returns trimmed text, treating null or empty strings as empty
     private String optionalText(String value) {
         return value == null ? "" : value.trim();
     }
 
+    // Parses a string to an integer, throwing an exception for invalid input
     private int parseInteger(String rawValue, String fieldName) {
         try {
             return Integer.parseInt(rawValue);
@@ -504,6 +525,7 @@ public class AssignmentFormDialog extends JDialog {
         }
     }
 
+    // Parses a string to a double, throwing an exception for invalid input
     private double parseDouble(String rawValue, String fieldName) {
         try {
             return Double.parseDouble(rawValue);
@@ -512,6 +534,7 @@ public class AssignmentFormDialog extends JDialog {
         }
     }
 
+    // Attaches a listener to track changes in a text field
     private void attachDocumentListener(JTextField field, Runnable onChange) {
         field.getDocument().addDocumentListener(new DocumentListener() {
             @Override

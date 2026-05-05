@@ -18,6 +18,7 @@ import storage.StorageManager;
 import ui.SemesterListFrame;
 
 public class Main {
+    // Entry point for the application
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             setSystemLookAndFeel();
@@ -32,6 +33,7 @@ public class Main {
         });
     }
 
+    // Creates and populates a semester with sample data for testing
     private static void seedSampleData(SemesterManager semesterManager) {
         Semester sampleSemester = semesterManager.addSemester("Spring 2026");
 
@@ -89,6 +91,7 @@ public class Main {
         semesterManager.addCourseToSemester(sampleSemester, sampleCourse);
     }
 
+    // Sets the system look and feel for the GUI
     private static void setSystemLookAndFeel() {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());

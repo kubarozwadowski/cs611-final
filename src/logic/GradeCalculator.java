@@ -19,9 +19,7 @@ public class GradeCalculator {
         this.course = course;
     }
 
-    /**
-     * Recalculates and updates the current grade for every student in the course.
-     */
+    // Recalculates and updates the current grade for every student in the course
     public void calculateAllGrades() {
         for (Student student : course.getStudents()) {
             calculateStudentGrade(student);
@@ -119,6 +117,7 @@ public class GradeCalculator {
         return result;
     }
 
+    // Returns assignments of a given custom type
     private List<Assignment> getAssignmentsByCustomType(String customType) {
         List<Assignment> result = new ArrayList<>();
         for (Assignment a : course.getAssignments()) {
