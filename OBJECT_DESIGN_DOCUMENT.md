@@ -4,6 +4,38 @@
 
 This document outlines the overall design choices made for the grading system final project for CS 611.
 
+## Key Interfaces
+
+### Gradeable
+
+`Gradeable` is a marker interface for objects that can be graded. It defines the contract for grading behavior.
+
+See [Gradeable.java](src/interfaces/Gradeable.java).
+
+It declares:
+- `grade()` — performs grading logic
+- `isGraded()` — checks if an object has been graded
+- `getGradingStatus()` — returns the current grading status
+
+**Design Choice:**
+By defining this interface, any object that supports grading can be handled uniformly. This allows the system to be extended with new gradeable objects without modifying existing code.
+
+Some examples could include things like attendence objects, participation, new assignment types, etc.
+
+### Summarizable
+
+`Summarizable` is a marker interface for objects that can produce a text summary.
+
+See [Summarizable.java](src/interfaces/Summarizable.java).
+
+It declares:
+- `getSummary()` — returns a string representation of the object's summary
+
+**Design Choice:**
+This interface enables a consistent way for objects to provide human-readable summaries for display in the UI, making it easy to generate reports or preview information across different object types.
+
+This is useful for anything we might want to get some summarizing information for example it could be used to get summary statistics for class scores like median, percentiles, distribution, etc. The same can be said for a student's grades or anything else that might be of interest for a Professor later on. 
+
 ## Core Object Model
 
 ### SemesterManager
